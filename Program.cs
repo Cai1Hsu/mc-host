@@ -1,7 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 string cwd = Environment.CurrentDirectory;
 
-string jrePath = "";
+string jrePath = "java";
 
 string jvmArgs = "";
 
@@ -15,7 +15,7 @@ foreach (string arg in args)
     switch (key)
     {
         case "-java":
-            jrePath = val != "" ? val : "java";
+            jrePath = val;
             if (!File.Exists(jrePath)){
                 Console.WriteLine("Java Runtime Environment not found at " + jrePath);
                 Console.WriteLine("Please specify the path to the java executable with the -java argument");
@@ -51,7 +51,7 @@ void LogCycle(){
         Console.WriteLine("Crash Times: " + minecraftServer.CrashTimes.Count);
         foreach (var crashTime in minecraftServer.CrashTimes)
         {
-            Console.WriteLine(crashTime.ToShortTimeString());
+            Console.WriteLine("at " + crashTime.ToShortTimeString());
         }
     }
     if (minecraftServer.OnlinePlayers.Count != LastCyclePlayerCount)
@@ -59,7 +59,7 @@ void LogCycle(){
         Console.WriteLine("Player Count: " + minecraftServer.OnlinePlayers.Count);
         foreach (var player in minecraftServer.OnlinePlayers)
         {
-            Console.WriteLine(player);
+            Console.WriteLine("\t" + player);
         }
     }
     LastCyclePlayerCount = minecraftServer.OnlinePlayers.Count;

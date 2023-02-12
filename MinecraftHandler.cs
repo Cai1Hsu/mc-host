@@ -18,6 +18,14 @@ class MinecraftHandler
 
     public int LoopCount { get; set; } = 0;
 
+    public List<string> StoragedLog { get; set; } = null!;
+
+    public int LogReadPosition = 0;
+
+    public StreamReader LogReader { get; set; } = null!;
+
+    public StreamWriter LogWriter { get; set; } = null!;
+
     public MinecraftHandler(string jrePath, string jvmArgs)
     {
         this.jrePath = jrePath;
@@ -25,6 +33,7 @@ class MinecraftHandler
 
         psi = new ProcessStartInfo(this.jrePath, this.jvmArgs);
         psi.RedirectStandardOutput = true;
+        psi.RedirectStandardInput =true;
         psi.UseShellExecute = false;
         psi.CreateNoWindow = true;
 
@@ -37,7 +46,13 @@ class MinecraftHandler
     public void StartMinecraft()
     {
         java = Process.Start(psi) ?? throw new Exception("Failed to start Minecraft Server. Are you sure you have Java installed?");
-        string output = java.StandardOutput.ReadToEnd();
+        Task.Delay(100).Wait();
+        if (java.HasExited)
+            throw new Exception("Java exited before we could handle it. Please check the output for more information.");
+        StoragedLog = new List<string>();
+        LogReadPosition = 0;
+        LogReader = java.StandardOutput;
+        LogWriter = new StreamWriter($"MinecraftServer-{CrashTimes.Count}.log", true);
     }
 
     public void StopMinecraft()
@@ -45,9 +60,9 @@ class MinecraftHandler
         java.Kill();
     }
 
-    public string GetLog()
+    public void UpdateStoragedLog()
     {
-        return java.StandardOutput.ReadToEnd();
+        java.StandardOutput.ReadToEnd().Split("\n").ToList().ForEach(line => StoragedLog.Add(line));
     }
 
     public void SendCommand(string command)
@@ -58,7 +73,7 @@ class MinecraftHandler
     public string GetOnlinePlayers()
     {
         SendCommand("list");
-        string output = GetLog();
+        string output = StoragedLog.Last();
         string[] outputArray = output.Split(" ");
         string players = outputArray[outputArray.Length - 1];
         return players;
@@ -95,19 +110,29 @@ class MinecraftHandler
             Restart();
     }
 
+    public void WriteJavaLog()
+    {
+        for (int i = LogReadPosition; i < StoragedLog.Count; i++)
+        {
+            LogWriter.WriteLine(StoragedLog[i]);
+        }
+    }
+
     public void Loop(){
+        UpdateStoragedLog();
         UpdateCrashTime();
+        WriteJavaLog();
 
         // Update Players every 30 seconds
-        if (LoopCount % 3 == 0){
+        if (LoopCount % 6 == 0){
             UpdateOnlinePlayers();
-            
+
             // Update Player Play Time every 1 minutes
-            if(LoopCount % 6 == 0)  UpdatePlayerPlayTime();
+            if(LoopCount % 12 == 0)  UpdatePlayerPlayTime();
         }
-        
+
         RestartIfCrashed();
         LoopCount++;
-        Task.Delay(1000 * 10).Wait();
+        Task.Delay(1000 * 5).Wait();
     }
 }
