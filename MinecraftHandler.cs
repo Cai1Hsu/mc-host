@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 
 class MinecraftHandler
 {
@@ -20,11 +21,15 @@ class MinecraftHandler
 
     public List<string> StoragedLog { get; set; } = null!;
 
-    public int LogReadPosition = 0;
-
     public StreamReader LogReader { get; set; } = null!;
 
     public StreamWriter LogWriter { get; set; } = null!;
+
+    public int crashTimeAddition = 0;
+
+    private StringBuilder JavaLogBuffer = new StringBuilder();
+
+    public bool IsDone { get; set; } = false;
 
     public MinecraftHandler(string jrePath, string jvmArgs)
     {
@@ -33,7 +38,7 @@ class MinecraftHandler
 
         psi = new ProcessStartInfo(this.jrePath, this.jvmArgs);
         psi.RedirectStandardOutput = true;
-        psi.RedirectStandardInput =true;
+        psi.RedirectStandardInput = true;
         psi.UseShellExecute = false;
         psi.CreateNoWindow = true;
 
@@ -46,13 +51,13 @@ class MinecraftHandler
     public void StartMinecraft()
     {
         java = Process.Start(psi) ?? throw new Exception("Failed to start Minecraft Server. Are you sure you have Java installed?");
-        Task.Delay(100).Wait();
         if (java.HasExited)
             throw new Exception("Java exited before we could handle it. Please check the output for more information.");
+        java.OutputDataReceived += (sender, args) => UpdateStoragedLog(args.Data);
+        java.BeginOutputReadLine();
         StoragedLog = new List<string>();
-        LogReadPosition = 0;
-        LogReader = java.StandardOutput;
-        LogWriter = new StreamWriter($"MinecraftServer-{CrashTimes.Count}.log", true);
+        LogWriter = new StreamWriter($"MinecraftServer-{CrashTimes.Count + crashTimeAddition}.log", new FileStreamOptions() { Access = FileAccess.Write, Mode= FileMode.Append, Share= FileShare.ReadWrite});
+        IsDone = false;
     }
 
     public void StopMinecraft()
@@ -60,9 +65,16 @@ class MinecraftHandler
         java.Kill();
     }
 
-    public void UpdateStoragedLog()
+    public void UpdateStoragedLog(string? data)
     {
-        java.StandardOutput.ReadToEnd().Split("\n").ToList().ForEach(line => StoragedLog.Add(line));
+        if (data == null) return;
+
+
+        if(!IsDone && data.Contains("Done"))
+            IsDone = true;
+
+        StoragedLog.Add(data);
+        JavaLogBuffer.AppendLine(data);
     }
 
     public void SendCommand(string command)
@@ -82,12 +94,15 @@ class MinecraftHandler
     public void UpdateOnlinePlayers()
     {
         OnlinePlayers = GetOnlinePlayers().Split(",").ToList();
+        OnlinePlayers.Remove("");
     }
 
     public void UpdatePlayerPlayTime()
     {
         foreach (string player in OnlinePlayers)
         {
+            if (!PlayerPlayTime.ContainsKey(player))
+                PlayerPlayTime.Add(player, 0);
             PlayerPlayTime[player] = PlayerPlayTime[player] + 1;
         }
     }
@@ -112,27 +127,25 @@ class MinecraftHandler
 
     public void WriteJavaLog()
     {
-        for (int i = LogReadPosition; i < StoragedLog.Count; i++)
-        {
-            LogWriter.WriteLine(StoragedLog[i]);
-        }
+        LogWriter.WriteLine(JavaLogBuffer.ToString());
+        JavaLogBuffer.Clear();
     }
 
     public void Loop(){
-        UpdateStoragedLog();
         UpdateCrashTime();
         WriteJavaLog();
 
         // Update Players every 30 seconds
-        if (LoopCount % 6 == 0){
+        if (IsDone && LoopCount % 3 == 0){
+            Console.WriteLine("Updating Players...");
             UpdateOnlinePlayers();
 
             // Update Player Play Time every 1 minutes
-            if(LoopCount % 12 == 0)  UpdatePlayerPlayTime();
+            if(LoopCount % 6 == 0)  UpdatePlayerPlayTime();
         }
 
         RestartIfCrashed();
         LoopCount++;
-        Task.Delay(1000 * 5).Wait();
+        Thread.Sleep(1000 * 10);
     }
 }

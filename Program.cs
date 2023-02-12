@@ -5,6 +5,8 @@ string jrePath = "java";
 
 string jvmArgs = "";
 
+string port = "8080";
+
 foreach (string arg in args)
 {
     string[] split = arg.Split('=');
@@ -24,6 +26,10 @@ foreach (string arg in args)
             }
             break;
 
+        case "-port":
+            port = val == string.Empty ? "8080" : val;
+            break;
+
         default:
             jvmArgs += arg + " ";
             break;
@@ -31,10 +37,23 @@ foreach (string arg in args)
 }
 
 MinecraftHandler minecraftServer = new MinecraftHandler(jrePath, jvmArgs);
+HttpServer httpServer = new HttpServer(port, minecraftServer);
 
-Console.WriteLine("Starting Minecraft Server with following arguments:\n" + jrePath + " " + jvmArgs);
-Console.WriteLine("--------------------\n");
+Console.WriteLine("Starting Minecraft Server with following arguments: " + jrePath + " " + jvmArgs);
+
+while (File.Exists($"MinecraftServer-{minecraftServer.crashTimeAddition}.log"))
+{
+    minecraftServer.crashTimeAddition++;
+}
+Console.WriteLine("Log file will be saved as MinecraftServer-" + minecraftServer.crashTimeAddition + ".log");
+
 minecraftServer.StartMinecraft();
+Console.CancelKeyPress += (sender, args) => minecraftServer.StopMinecraft();
+
+Console.WriteLine("Minecraft Server started");
+Console.WriteLine("Starting http server on http://localhost:" + port);
+httpServer.Run();
+Console.WriteLine("--------------------\n");
 
 int LastCyclePlayerCount = 0;
 
@@ -44,14 +63,17 @@ while (true){
 }
 
 void LogCycle(){
-    Console.WriteLine("Loop Count: " + minecraftServer.LoopCount + " | " + DateTime.Now.ToShortTimeString());
-    Console.WriteLine("--------------------\n");
+    Console.WriteLine("Loop Count: " + minecraftServer.LoopCount + " | " + DateTime.Now.ToShortDateString());
+    Console.WriteLine("--------------------");
+    Console.WriteLine("Time: " + DateTime.Now.ToShortTimeString());
+    Console.WriteLine("Status: " + (minecraftServer.IsDone ? "Done" : "Not Done"));
+
     if (minecraftServer.CrashTimes.Count > 0)
     {
         Console.WriteLine("Crash Times: " + minecraftServer.CrashTimes.Count);
         foreach (var crashTime in minecraftServer.CrashTimes)
         {
-            Console.WriteLine("at " + crashTime.ToShortTimeString());
+            Console.WriteLine("\tat " + crashTime.ToShortDateString());
         }
     }
     if (minecraftServer.OnlinePlayers.Count != LastCyclePlayerCount)
@@ -62,5 +84,6 @@ void LogCycle(){
             Console.WriteLine("\t" + player);
         }
     }
+    Console.WriteLine();
     LastCyclePlayerCount = minecraftServer.OnlinePlayers.Count;
 }
