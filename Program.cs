@@ -98,5 +98,6 @@ void PrintUsage(){
     Console.WriteLine("  --no-autorestart   Disable automatic server restarts");
     Console.WriteLine("  -t --title=<title>  Set the title of the http server");
     Console.WriteLine("  <jvm args>         Arguments to pass to the java executable");
+    Console.WriteLine("                     (e.g. -Xmx2G -Xms2G -jar server.jar nogui)");
     Environment.Exit(0);
 }
