@@ -144,7 +144,7 @@ class HttpServer
             response.StatusCode = 200;
             response.ContentType = "text/html";
             return $"<html><head><title>{Title}</title></head><body><h1>{Title}</h1>" 
-                + "<p>Admin page</p><p>Exec Command</p><input type=\"text\"id=\"command\"name=\"command\"value=\"\"/><button type=\"button\"onclick=\"exec()\">send</button><p>Send Message</p><input type=\"text\"id=\"message\"name=\"message\"value=\"\"/><button type=\"button\"onclick=\"say()\">say</button><p>Control</p><button type=\"button\"onclick=\"window.location.href='/stop'\">stop</button><button type=\"button\"onclick=\"window.location.href='/restart'\">restart</button><script>function exec(){var command=document.getElementById(\"command\").value;var xhr=new XMLHttpRequest();xhr.open(\"GET\",\"/exec?command=\"+command,true);xhr.send()}function say(){var message=document.getElementById(\"message\").value;var xhr=new XMLHttpRequest();xhr.open(\"GET\",\"/say?message=\"+message,true);xhr.send()}function stop(){var xhr=new XMLHttpRequest();xhr.open(\"GET\",\"/stop\",true);xhr.send()}function restart(){var xhr=new XMLHttpRequest();xhr.open(\"GET\",\"/restart\",true);xhr.send()}</script></body></html>";
+                + "<p>Admin page</p><p>Exec Command</p><input type=\"text\"id=\"command\"name=\"command\"value=\"\"/><button type=\"button\"onclick=\"exec()\">send</button><p>Send Message</p><input type=\"text\"id=\"message\"name=\"message\"value=\"\"/><button type=\"button\"onclick=\"say()\">say</button><p>Control</p><button type=\"button\"onclick=\"window.location.href='/stop'\">stop</button><button type=\"button\"onclick=\"window.location.href='/restart'\">restart</button><button type=\"button\"onclick=\"window.location.href='/save'\">save world</button><button type=\"button\"onclick=\"window.location.href='/printstat'\">print stat</button><script>function exec(){var command=document.getElementById(\"command\").value;var xhr=new XMLHttpRequest();xhr.open(\"GET\",\"/exec?command=\"+command,true);xhr.send()}function say(){var message=document.getElementById(\"message\").value;var xhr=new XMLHttpRequest();xhr.open(\"GET\",\"/say?message=\"+message,true);xhr.send()}function stop(){var xhr=new XMLHttpRequest();xhr.open(\"GET\",\"/stop\",true);xhr.send()}function restart(){var xhr=new XMLHttpRequest();xhr.open(\"GET\",\"/restart\",true);xhr.send()}</script></body></html>";
         }
 
         // if path is /exec
@@ -180,6 +180,15 @@ class HttpServer
             return $"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><p>World Saving</p></body></html>";
         }
 
+        // if path is /printstat
+        if (absolutePath == "/printstat")
+        {
+            response.StatusCode = 200;
+            response.ContentType = "text/html";
+            Task.Run(() => MinecraftServer.PrintOnlineStatistics());
+            return $"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><p>Printed Statistics</p></body></html>";
+        }
+
         // if path is not found
         response.StatusCode = 404;
         return $"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><p>404 Not Found</p><p>Click <a href='/'>here</a> to return to homepage</p></body></html>";
@@ -207,7 +216,7 @@ class HttpServer
         }
         sb.Append("</ul>");
 
-        sb.Append("<p>Available commands:</p><ul><li><a href=\"/Log\">Server Log</a></li><li><a href=\"/Players\">Online Players</a></li><li><a href=\"/Messages\">Messages List</a></li><li><a href=\"/Statistics\">Time Statistics</a></li><li><a href=\"/Save\">Save World</a></li></ul><p>Find this this host on <a href=\"https://github.com/cai1hsu/mc-host\">GitHub</a></p></body></html>");
+        sb.Append("<p>Available commands:</p><ul><li><a href=\"/Log\">Server Log</a></li><li><a href=\"/Players\">Online Players</a></li><li><a href=\"/Messages\">Messages List</a></li><li><a href=\"/Statistics\">Time Statistics</a></li></ul><p>Find this this host on <a href=\"https://github.com/cai1hsu/mc-host\">GitHub</a></p></body></html>");
         return sb.ToString();
     }
 
