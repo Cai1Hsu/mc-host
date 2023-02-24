@@ -58,7 +58,7 @@ class HttpServer
         if (request.Url == null) return string.Empty;
         string absolutePath = request.Url.AbsolutePath.ToLower();
         // return homepage if no path is specified or not found
-        if (absolutePath == "/")
+        if (absolutePath == "/" || absolutePath == "/home")
         {
             response.StatusCode = 200;
             response.ContentType = "text/html";
@@ -69,7 +69,7 @@ class HttpServer
         {
             response.StatusCode = 200;
             response.ContentType = "text/html";
-            MinecraftServer.Restart();
+            Task.Run(() => MinecraftServer.Restart());
             return $"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><p>Restarting server...</p></body></html>";
         }
         
@@ -80,7 +80,7 @@ class HttpServer
             response.ContentType = "text/html";
             MinecraftServer.AutoRestart = false;
             MinecraftServer.Quit = true;
-            MinecraftServer.StopServer();
+            Task.Run(() => MinecraftServer.StopServer());
             return $"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><p>Stopping server...</p></body></html>";
         }
 
@@ -155,7 +155,7 @@ class HttpServer
             string? command = request.QueryString["command"];
             if (command == null) return $"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><p>Command not found</p></body></html>";
 
-            MinecraftServer.SendCommand(command);
+            Task.Run(() => MinecraftServer.SendCommand(command));
             return $"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><p>Sent command:{command}</p></body></html>";
         }
 
@@ -166,8 +166,17 @@ class HttpServer
             response.ContentType = "text/html";
             string? message = request.QueryString["message"];
             if (message == null) return $"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><p>Message not found</p></body></html>";
-            MinecraftServer.SendCommand($"say {message}");
+            Task.Run(() => MinecraftServer.SendCommand($"say {message}"));
             return $"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><p>Sent message: {message}</p></body></html>";
+        }
+
+        // if path is /save
+        if (absolutePath == "/save")
+        {
+            response.StatusCode = 200;
+            response.ContentType = "text/html";
+            Task.Run(() => MinecraftServer.SendCommand("save-all"));
+            return $"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><p>World Saving</p></body></html>";
         }
 
         // if path is not found
@@ -197,7 +206,7 @@ class HttpServer
         }
         sb.Append("</ul>");
 
-        sb.Append("<p>Available commands:</p><ul><li><a href=\"/Log\">Server Log</a></li><li><a href=\"/Players\">Online Players</a></li><li><a href=\"/Messages\">Messages List</a></li><li><a href=\"/Statistics\">Time Statistics</a></li></ul><p>Find this this host on <a href=\"https://github.com/cai1hsu/mc-host\">GitHub</a></p></body></html>");
+        sb.Append("<p>Available commands:</p><ul><li><a href=\"/Log\">Server Log</a></li><li><a href=\"/Players\">Online Players</a></li><li><a href=\"/Messages\">Messages List</a></li><li><a href=\"/Statistics\">Time Statistics</a></li><li><a href=\"/Save\">Save World</a></li></ul><p>Find this this host on <a href=\"https://github.com/cai1hsu/mc-host\">GitHub</a></p></body></html>");
         return sb.ToString();
     }
 
