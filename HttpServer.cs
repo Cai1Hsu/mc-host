@@ -19,6 +19,8 @@ class HttpServer
         this.Title = title;
 
         listener = new HttpListener();
+        listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
+        listener.IgnoreWriteExceptions = true;
         foreach (string s in prefixes)
         {
             listener.Prefixes.Add($"{s}{port}/");
