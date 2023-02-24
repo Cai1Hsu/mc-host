@@ -5,6 +5,7 @@ class HttpServer
 {
     private string[] prefixes = new string[] { 
         "http://localhost:",
+        "http://+:"
     };
     private HttpListener listener;
 
