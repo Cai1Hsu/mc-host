@@ -89,9 +89,12 @@ void PrintUsage(){
     Console.WriteLine("Minecraft Server Wrapper");
     Console.WriteLine("Usage: ./mc-host [options]");
     Console.WriteLine("Options:");
-    Console.WriteLine("  --java=<path>      Path to the java executable");
-    Console.WriteLine("  --port=<port>      Port to run the http server on");
-    Console.WriteLine("  --no-autorestart   Disable automatic server restarts");
     Console.WriteLine("  -? -h -help --help Display this help message");
+    Console.WriteLine("  --java=<path>      Path to the java executable");
+    Console.WriteLine("  --port/-p=<port>   Port to run the http server on");
+    Console.WriteLine("  --no-autorestart   Disable automatic server restarts");
+    Console.WriteLine("  -t --title         Title of the http server");
+    Console.WriteLine("  <jvm args>         Arguments to pass to the java executable");
+    Console.WriteLine("                     (e.g. -Xmx2G -Xms2G -jar server.jar nogui)");
     Environment.Exit(0);
 }
