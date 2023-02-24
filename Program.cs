@@ -26,6 +26,7 @@ foreach (string arg in args)
 
     switch (key)
     {
+        case "-java":
         case "--java":
             jrePath = val;
             if (!File.Exists(jrePath)){
@@ -36,6 +37,8 @@ foreach (string arg in args)
             }
             break;
 
+        case "-p":
+        case "-port":
         case "--port":
             port = val == string.Empty ? "8080" : val;
             break;
@@ -89,9 +92,11 @@ void PrintUsage(){
     Console.WriteLine("Minecraft Server Wrapper");
     Console.WriteLine("Usage: ./mc-host [options]");
     Console.WriteLine("Options:");
+    Console.WriteLine("  -? -h -help --help Display this help message");
     Console.WriteLine("  --java=<path>      Path to the java executable");
     Console.WriteLine("  --port=<port>      Port to run the http server on");
     Console.WriteLine("  --no-autorestart   Disable automatic server restarts");
-    Console.WriteLine("  -? -h -help --help Display this help message");
+    Console.WriteLine("  -t --title=<title>  Set the title of the http server");
+    Console.WriteLine("  <jvm args>         Arguments to pass to the java executable");
     Environment.Exit(0);
 }

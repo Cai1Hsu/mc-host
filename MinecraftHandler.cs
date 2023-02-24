@@ -47,6 +47,8 @@ class MinecraftHandler
 
     private bool EventToLog = true;
 
+    public DateTime StartTime { get; set; } = DateTime.Now;
+
     public MinecraftHandler(string jrePath, string jvmArgs, bool autoRestart = true)
     {
         this.jrePath = jrePath;
@@ -68,7 +70,8 @@ class MinecraftHandler
     public void StartMinecraft()
     {
         java = Process.Start(psi) ?? throw new Exception("Failed to start Minecraft Server. Are you sure you have Java installed?");
-        
+        StartTime = DateTime.Now;
+
         if (java.HasExited)
             throw new Exception("Java exited before we could handle it. Please check the output for more information.");
         
@@ -209,14 +212,6 @@ class MinecraftHandler
         }
     }
 
-    public void UpdateCrashTime()
-    {
-        if (java.HasExited){
-            CrashTimes.Add(DateTime.Now);
-            EventToLog = true;
-        }
-    }
-
     public void Restart()
     {
         StopServer();
@@ -226,8 +221,19 @@ class MinecraftHandler
     public void RestartIfCrashed()
     {
         if (java.HasExited){
+            if ((DateTime.Now - StartTime).TotalSeconds < 5){
+                Console.WriteLine("Minecraft Server crashed too fast. Is there any error in the arguments?");
+                Console.WriteLine("We will not restart the server to prevent infinite loop.");
+                Quit = true;
+                AutoRestart = false;
+                java.Kill();
+                Environment.Exit(1);
+            }
+
             WriteJavaLog();
-            Restart();
+            if (AutoRestart) Restart();
+            CrashTimes.Add(DateTime.Now);
+            EventToLog = true;
         }
     }
 
@@ -300,7 +306,6 @@ class MinecraftHandler
     public void Loop(){
         if (!IsInitialized) return;
 
-        UpdateCrashTime();
         AnalyzeQueuedLog();
 
         if (LoopCount % 5 == 0) Task.Run(() => WriteJavaLog());
@@ -312,7 +317,7 @@ class MinecraftHandler
 
         if (IsDone && LoopCount % (60 * 20) == 0 && PlayerPlayTime.Count > 0) Task.Run(() => PrintOnlineStatistics());
 
-        if (AutoRestart && LoopCount % 10 == 0) RestartIfCrashed();
+        RestartIfCrashed();
 
         HostLogCycle();
 
