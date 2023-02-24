@@ -242,8 +242,9 @@ class MinecraftHandler
         JavaLogWritingBuffer.Clear();
     }
 
-    public void PrintOnlineStatics()
+    public void PrintOnlineStatistics()
     {
+        if (PlayerPlayTime.Count == 0) return;
         SeverMessage("Online Time Statistics:");
 
         foreach (string player in PlayerPlayTime.Keys)
@@ -308,9 +309,9 @@ class MinecraftHandler
         // Update Player Play Time every 30 seconds
         if (IsDone && LoopCount % 30 == 0) UpdatePlayerPlayTime();
 
-        if (IsDone && LoopCount % 60 * 20== 0) SendCommand("save-all");
+        if (IsDone && LoopCount % 60 * 20 == 0) SendCommand("save-all");
 
-        if (IsDone && LoopCount % 60 * 30 == 0) Task.Run(() => PrintOnlineStatics());
+        if (IsDone && LoopCount % 60 * 20 == 0) Task.Run(() => PrintOnlineStatistics());
 
         if (AutoRestart && LoopCount % 10 == 0) RestartIfCrashed();
 
