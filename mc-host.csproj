@@ -8,6 +8,7 @@
     <Nullable>enable</Nullable>
     <PublishAot>true</PublishAot>
     <StripSymbols>true</StripSymbols>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
   </PropertyGroup>
 
 </Project>
