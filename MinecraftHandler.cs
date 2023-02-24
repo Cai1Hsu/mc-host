@@ -231,7 +231,7 @@ class MinecraftHandler
             }
 
             WriteJavaLog();
-            if (AutoRestart) Restart();
+            if (AutoRestart && !Quit) Restart();
             CrashTimes.Add(DateTime.Now);
             EventToLog = true;
         }

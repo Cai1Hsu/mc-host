@@ -94,7 +94,7 @@ void PrintUsage(){
     Console.WriteLine("Options:");
     Console.WriteLine("  -? -h -help --help Display this help message");
     Console.WriteLine("  --java=<path>      Path to the java executable");
-    Console.WriteLine("  --port=<port>      Port to run the http server on");
+    Console.WriteLine("  --port/-p=<port>   Port to run the http server on");
     Console.WriteLine("  --no-autorestart   Disable automatic server restarts");
     Console.WriteLine("  -t --title=<title>  Set the title of the http server");
     Console.WriteLine("  <jvm args>         Arguments to pass to the java executable");
