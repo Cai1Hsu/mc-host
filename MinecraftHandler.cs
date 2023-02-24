@@ -244,7 +244,6 @@ class MinecraftHandler
 
     public void PrintOnlineStatistics()
     {
-        if (PlayerPlayTime.Count == 0) return;
         SeverMessage("Online Time Statistics:");
 
         foreach (string player in PlayerPlayTime.Keys)
@@ -311,7 +310,7 @@ class MinecraftHandler
 
         if (IsDone && LoopCount % (60 * 20) == 0) SendCommand("save-all");
 
-        if (IsDone && LoopCount % (60 * 20) == 0) Task.Run(() => PrintOnlineStatistics());
+        if (IsDone && LoopCount % (60 * 20) == 0 && PlayerPlayTime.Count > 0) Task.Run(() => PrintOnlineStatistics());
 
         if (AutoRestart && LoopCount % 10 == 0) RestartIfCrashed();
 
