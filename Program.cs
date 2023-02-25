@@ -99,7 +99,7 @@ while (File.Exists($"MinecraftServer-{minecraftServer.crashTimeAddition}.log"))
 Console.WriteLine("Log file will be saved as MinecraftServer-" + minecraftServer.crashTimeAddition + ".log");
 
 minecraftServer.StartMinecraft();
-Console.CancelKeyPress += (sender, args) => minecraftServer.StopServer();
+Console.CancelKeyPress += (sender, args) => minecraftServer.TerminateServer();
 
 Console.WriteLine("Minecraft Server started");
 Console.WriteLine("Starting http server on http://localhost:" + port);

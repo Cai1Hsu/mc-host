@@ -94,12 +94,19 @@ class MinecraftHandler
         if (PlayerPlayTime.Count == 0) ReadStoredTimeStatistics();
     }
 
-    public void StopServer()
+    public void TerminateServer()
     {
         SendCommand("/stop", true);
         IsInitialized = false;
         Quit = true;
         AutoRestart = false;
+        java.Kill();
+    }
+
+    public void StopServer()
+    {
+        SendCommand("/stop", true);
+        IsInitialized = false;
         java.Kill();
     }
 
@@ -174,7 +181,7 @@ class MinecraftHandler
                     if (logContent.Contains("Failed to start the minecraft server"))
                     {
                         WriteJavaLog();
-                        StopServer();
+                        TerminateServer();
 
                         Console.WriteLine("Minecraft Server failed to start. Maybe the lock file was occupied");
                         Environment.Exit(1);
@@ -193,7 +200,7 @@ class MinecraftHandler
                     {
                         Console.WriteLine("**** FAILED TO BIND TO PORT!");
                         Console.WriteLine("Perhaps a server is already running on that port?");
-                        StopServer();
+                        TerminateServer();
                     }
                 }
                 /* Current not used
@@ -339,7 +346,7 @@ class MinecraftHandler
 
     public void PrintOnlineStatistics()
     {
-        SeverMessage("------------------------------ " + DateTime.Now.ToShortTimeString());
+        SeverMessage("------------------------- " + DateTime.Now.ToShortTimeString());
         SeverMessage("Online Time Statistics:");
 
         foreach (string player in PlayerPlayTime.Keys)
@@ -347,7 +354,7 @@ class MinecraftHandler
             SeverMessage($"{player}: {(int)Math.Ceiling(PlayerPlayTime[player].TotalMinutes)} minutes");
         }
 
-        SeverMessage("------------------------------");
+        SeverMessage("-------------------------");
     }
 
     private void HostLogCycle()

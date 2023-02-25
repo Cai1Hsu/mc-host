@@ -83,7 +83,7 @@ class HttpServer
             response.ContentType = "text/html";
             MinecraftServer.AutoRestart = false;
             MinecraftServer.Quit = true;
-            Task.Run(() => MinecraftServer.StopServer());
+            Task.Run(() => MinecraftServer.TerminateServer());
             return $"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><p>Stopping server...</p></body></html>";
         }
 
@@ -218,7 +218,7 @@ class HttpServer
         }
         sb.Append("</ul>");
 
-        sb.Append("<p>Available commands:</p><ul><li><a href=\"/Log\">Server Log</a></li><li><a href=\"/Players\">Online Players</a></li><li><a href=\"/Messages\">Messages List</a></li><li><a href=\"/Statistics\">Time Statistics</a></li></ul><p>Find this this host on <a href=\"https://github.com/cai1hsu/mc-host\">GitHub</a></p></body></html>");
+        sb.Append("<p>Available commands:</p><ul><li><a href=\"/Log\">Server Log</a></li><li><a href=\"/Players\">Online Players</a></li><li><a href=\"/Messages\">Messages List</a></li><li><a href=\"/Statistics\">Time Statistics</a></li></ul><p>Find this host on <a href=\"https://github.com/cai1hsu/mc-host\">GitHub</a></p></body></html>");
         return sb.ToString();
     }
 
