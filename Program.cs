@@ -127,7 +127,7 @@ void PrintUsage()
     Console.WriteLine("  --no-autorestart   Disable automatic server restarts");
     Console.WriteLine("  -t --title=<title>  Set the title of the http server");
     Console.WriteLine("  -rm-lock --rm-lock Remove the session.lock file");
-    Console.WriteLine("  -kill-jvm --kill-jvm Kill all java processes");
+    Console.WriteLine("  -kill-jvm --kill-jvm Kill all java processes with the server's .jar file");
     Console.WriteLine("  <jvm args>         Arguments to pass to the java executable");
     Console.WriteLine("                     (e.g. -Xmx2G -Xms2G -jar server.jar nogui)");
     Environment.Exit(0);
