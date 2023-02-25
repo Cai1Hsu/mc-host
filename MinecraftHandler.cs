@@ -165,8 +165,6 @@ class MinecraftHandler
                 {
                     if (logContent.Contains("Failed to start the minecraft server"))
                     {
-                        Quit = true;
-                        AutoRestart = false;
                         WriteJavaLog();
                         StopServer();
 
@@ -181,10 +179,16 @@ class MinecraftHandler
                     Console.WriteLine("Log file: " + LogFileName);
 
                 }
-                /* Current not used
                 else if (logType.Contains("WARN"))
                 {
+                    if (!IsDone && logContent.StartsWith("Perhaps a server is already running"))
+                    {
+                        Console.WriteLine("**** FAILED TO BIND TO PORT!");
+                        Console.WriteLine("Perhaps a server is already running on that port?");
+                        StopServer();
+                    }
                 }
+                /* Current not used
                 else if (logType.Contains("FATAL"))
                 {
                 }
@@ -201,8 +205,17 @@ class MinecraftHandler
     {
         if (!IsDone && !force) return false;
 
-        java.StandardInput.WriteLine(command);
-        return true;
+        try
+        {
+            java.StandardInput.WriteLine(command);            
+            return true;
+        }
+        catch (Exception)
+        {
+            
+        }
+
+        return false;
     }
 
     public void SeverMessage(string message)
