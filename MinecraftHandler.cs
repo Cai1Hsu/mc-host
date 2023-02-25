@@ -38,7 +38,7 @@ class MinecraftHandler
 
     public bool IsInitialized { get; set; } = false;
 
-    public List<MinecraftMessage> MessageList { get; set; } = new List<MinecraftMessage>();
+    public List<PlayerMessage> MessageList { get; set; } = new List<PlayerMessage>();
 
     public StringBuilder ServerLogBuilder { get; set; } = new StringBuilder();
 
@@ -139,7 +139,7 @@ class MinecraftHandler
                         // Someone sent a message
                         string sender = logContent[1..logContent.IndexOf(">")];
                         string message = logContent[(logContent.IndexOf(">") + 2)..];
-                        MessageList.Add(new MinecraftMessage { Content = message, Sender = sender, Time = DateTime.Now });
+                        MessageList.Add(new PlayerMessage { Content = message, Sender = sender, Time = DateTime.Now });
                     }
                     // Player joined the game
                     else if (logContent.Contains("joined the game"))

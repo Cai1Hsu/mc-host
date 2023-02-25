@@ -115,7 +115,7 @@ class HttpServer
             response.ContentType = "text/html";
             StringBuilder sb = new StringBuilder();
             sb.Append($"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><h2>Messages:</h2><ul>");
-            foreach (MinecraftMessage message in MinecraftServer.MessageList)
+            foreach (PlayerMessage message in MinecraftServer.MessageList)
             {
                 sb.Append($"<li>[{message.Time.ToShortTimeString()}] &lt;{message.Sender}&gt;: {message.Content}</li>");
             }
