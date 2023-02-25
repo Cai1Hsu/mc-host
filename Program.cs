@@ -1,11 +1,12 @@
 ﻿// See https://aka.ms/new-console-template for more information
+#if DEBUG
+args = "-Xmx1G -Xms1G -jar server.jar nogui".Split(' ');
+#endif
 if (args.Length == 0)
 {
     PrintUsage();
     return;
 }
-
-string cwd = Environment.CurrentDirectory;
 
 string jrePath = "java";
 

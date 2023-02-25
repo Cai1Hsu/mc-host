@@ -96,13 +96,11 @@ class MinecraftHandler
     {
         if (data == null) return;
 
-
         if (!IsDone && data.Contains("Done"))
         {
             IsDone = true;
             EventToLog = true;
         }
-
 
         StoragedLog.Add(data);
         ServerLogBuilder.AppendLine(data);
@@ -119,7 +117,7 @@ class MinecraftHandler
             if (log[0] != '[') continue;
 
             int logTypeEndIndex = log.IndexOf("]:");
-            if (logTypeEndIndex == -1) continue;
+            if (logTypeEndIndex == -1 || log.Length < 12) continue;
 
             try
             {
@@ -129,8 +127,16 @@ class MinecraftHandler
 
                 if (logType.Contains("INFO"))
                 {
+                    // message
+                    if (logContent.StartsWith("<"))
+                    {
+                        // Someone sent a message
+                        string sender = logContent[1..logContent.IndexOf(">")];
+                        string message = logContent[(logContent.IndexOf(">") + 2)..];
+                        MessageList.Add(new MinecraftMessage { Content = message, Sender = sender, Time = DateTime.Now });
+                    }
                     // Player joined the game
-                    if (logContent.Contains("joined the game"))
+                    else if (logContent.Contains("joined the game"))
                     {
                         string playerName = logContent[0..logContent.IndexOf(" ")];
                         OnlinePlayers.Add(playerName, DateTime.Now);
@@ -145,13 +151,11 @@ class MinecraftHandler
                         RecentLeftPlayer.Enqueue(playerName);
                         EventToLog = true;
                     }
-                    // message
-                    else if (logContent.StartsWith("<"))
+                    else if(!IsDone && logContent.Contains("You need to agree to the EULA"))
                     {
-                        // Someone sent a message
-                        string sender = logContent[1..logContent.IndexOf(">")];
-                        string message = logContent[(logContent.IndexOf(">") + 2)..];
-                        MessageList.Append(new MinecraftMessage { Content = message, Sender = sender, Time = DateTime.Now });
+                        Quit = true;
+                        AutoRestart = false;
+                        Console.WriteLine("You need to agree to the EULA in order to run the server.");
                     }
                 }
                 else if (logType.Contains("ERROR"))
@@ -164,6 +168,7 @@ class MinecraftHandler
                         StopServer();
 
                         Console.WriteLine("Minecraft Server failed to start. Please check the log for more information.");
+                        Environment.Exit(1);
                     }
                     else
                     {
@@ -172,7 +177,6 @@ class MinecraftHandler
                     Console.WriteLine("Error information: " + logContent);
                     Console.WriteLine("Log file: " + LogFileName);
 
-                    Environment.Exit(1);
                 }
                 /* Current not used
                 else if (logType.Contains("WARN"))
@@ -190,11 +194,12 @@ class MinecraftHandler
         }
     }
 
-    public string SendCommand(string command)
+    public bool SendCommand(string command)
     {
+        if (!IsDone) return false;
+
         java.StandardInput.WriteLine(command);
-        Task.Delay(100).Wait();
-        return StoragedLog.Last();
+        return true;
     }
 
     public void SeverMessage(string message)
@@ -244,25 +249,35 @@ class MinecraftHandler
 
     public void WriteJavaLog()
     {
-        using (StreamWriter LogWriter = new StreamWriter(LogFileName, true))
+        try
         {
-            while (JavaLogWritingBuffer.Count > 0)
+            using (StreamWriter LogWriter = new StreamWriter(LogFileName, true))
             {
-                LogWriter.WriteLine(JavaLogWritingBuffer.Dequeue());
+                while (JavaLogWritingBuffer.Count > 0)
+                {
+                    LogWriter.WriteLine(JavaLogWritingBuffer.Dequeue());
+                }
             }
+            JavaLogWritingBuffer.Clear();
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Error occurred when trying to write log. Some logs may lost.");
         }
 
-        JavaLogWritingBuffer.Clear();
     }
 
     public void PrintOnlineStatistics()
     {
+        SeverMessage("------------------------------ " + DateTime.Now.ToShortTimeString());
         SeverMessage("Online Time Statistics:");
 
         foreach (string player in PlayerPlayTime.Keys)
         {
             SeverMessage($"{player}: {PlayerPlayTime[player].TotalMinutes} minutes");
         }
+
+        SeverMessage("------------------------------");
     }
 
     private void HostLogCycle()
@@ -322,9 +337,9 @@ class MinecraftHandler
         // Update Player Play Time every 30 seconds
         if (IsDone && LoopCount % 30 == 0) UpdatePlayerPlayTime();
 
-        if (IsDone && LoopCount % (60 * 20) == 0) SendCommand("save-all");
+        if (IsDone && LoopCount % 1200 == 0) SendCommand("save-all");
 
-        if (IsDone && LoopCount % (60 * 20) == 0 && PlayerPlayTime.Count > 0) Task.Run(() => PrintOnlineStatistics());
+        if (IsDone && LoopCount % 1200 == 0 && PlayerPlayTime.Count > 0) Task.Run(() => PrintOnlineStatistics());
 
         RestartIfCrashed();
 

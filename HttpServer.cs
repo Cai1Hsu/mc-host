@@ -117,7 +117,7 @@ class HttpServer
             sb.Append($"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><p>Messages:</p><ul>");
             foreach (MinecraftMessage message in MinecraftServer.MessageList)
             {
-                sb.Append($"<li><{message.Sender}>: {message.Content}</li>");
+                sb.Append($"<li>[{message.Time.ToShortTimeString()}]<{message.Sender}>: {message.Content}</li>");
             }
             sb.Append("</ul></body></html>");
             return sb.ToString();
@@ -209,7 +209,7 @@ class HttpServer
         }
         sb.Append("</ul>");
 
-        sb.Append("<p>Statistics</p><ul>");
+        sb.Append("<p>Statistics:</p><ul>");
         foreach (string player in MinecraftServer.PlayerPlayTime.Keys)
         {
             sb.Append($"<li>{player}: {MinecraftServer.PlayerPlayTime[player].TotalMinutes} minutes</li>");
