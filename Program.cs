@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Diagnostics;
 
 #if DEBUG
 Console.WriteLine("Running under *Debug* mode");
@@ -23,6 +24,8 @@ string jvmArgs = "";
 string port = "8080";
 
 string title = "Minecraft Server";
+
+string jar = ".jar";
 
 bool AutoRestart = true;
 
@@ -85,6 +88,8 @@ foreach (string arg in args)
             jvmArgs += arg + " ";
             break;
     }
+
+    if (arg.EndsWith(".jar")) jar = arg;
 }
 
 MinecraftHandler minecraftServer = new MinecraftHandler(jrePath, jvmArgs, AutoRestart);
@@ -130,12 +135,13 @@ void PrintUsage()
 
 void KillJava()
 {
-    System.Diagnostics.Process[] processes = System.Diagnostics.Process.GetProcessesByName("java");
+    Process[] processes = Process.GetProcessesByName("java");
     foreach (var p in processes)
     {
         try
         {
-            p.Kill();
+            if (p.StartInfo.Arguments.Contains(".jar") && p.StartInfo.Arguments.Contains(jar))
+                p.Kill();
         }
         catch (Exception)
         {
