@@ -114,12 +114,12 @@ class HttpServer
             response.StatusCode = 200;
             response.ContentType = "text/html";
             StringBuilder sb = new StringBuilder();
-            sb.Append($"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><h2>Messages:</h2><ul>");
+            sb.Append($"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><h2>Messages:</h2>");
             foreach (MinecraftMessage message in MinecraftServer.MessageList)
             {
                 sb.Append($"<p>[{message.Time.ToShortTimeString()}] <{message.Sender}>: {message.Content}<p>");
             }
-            sb.Append("</ul></body></html>");
+            sb.Append("</body></html>");
             return sb.ToString();
         }
 
