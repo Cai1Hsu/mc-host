@@ -1,4 +1,6 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using System;
+using System.IO;
+
 #if DEBUG
 Console.WriteLine("Running under *Debug* mode");
 

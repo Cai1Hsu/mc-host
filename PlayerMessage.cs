@@ -1,3 +1,5 @@
+using System;
+
 struct PlayerMessage
 {
     public string Content { get; set; }

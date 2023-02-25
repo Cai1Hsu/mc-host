@@ -4,11 +4,12 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
     <RootNamespace>mc_host</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PublishAot>true</PublishAot>
     <StripSymbols>true</StripSymbols>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <Optimize>true</Optimize>
+    <TrimUnusedDependencies>true</TrimUnusedDependencies>
   </PropertyGroup>
 
 </Project>
