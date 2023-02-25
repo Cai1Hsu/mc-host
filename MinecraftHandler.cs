@@ -7,7 +7,7 @@ class MinecraftHandler
 
     private string jvmArgs;
 
-    public Process java { get;set; } = null!;
+    public Process java { get; set; } = null!;
 
     private ProcessStartInfo psi;
 
@@ -66,7 +66,7 @@ class MinecraftHandler
         PlayerPlayTime = new Dictionary<string, TimeSpan>();
         EventToLog = true;
     }
-    
+
     public void StartMinecraft()
     {
         java = Process.Start(psi) ?? throw new Exception("Failed to start Minecraft Server. Are you sure you have Java installed?");
@@ -74,10 +74,10 @@ class MinecraftHandler
 
         if (java.HasExited)
             throw new Exception("Java exited before we could handle it. Please check the output for more information.");
-        
+
         java.OutputDataReceived += (sender, args) => HandleNewLog(args.Data);
         java.BeginOutputReadLine();
-        
+
         StoragedLog = new List<string>();
         IsDone = false;
         LogAnalysisQueue.Clear();
@@ -97,12 +97,12 @@ class MinecraftHandler
         if (data == null) return;
 
 
-        if(!IsDone && data.Contains("Done"))
+        if (!IsDone && data.Contains("Done"))
         {
             IsDone = true;
             EventToLog = true;
         }
-            
+
 
         StoragedLog.Add(data);
         ServerLogBuilder.AppendLine(data);
@@ -110,15 +110,17 @@ class MinecraftHandler
         LogAnalysisQueue.Enqueue(data);
     }
 
-    private void AnalyzeQueuedLog(){
-        while (LogAnalysisQueue.Count > 0){
+    private void AnalyzeQueuedLog()
+    {
+        while (LogAnalysisQueue.Count > 0)
+        {
             string log = LogAnalysisQueue.Dequeue();
             // [07:28:21] [Server thread/INFO]: Done (2.958s)! For help, type "help"
             if (log[0] != '[') continue;
-            
+
             int logTypeEndIndex = log.IndexOf("]:");
             if (logTypeEndIndex == -1) continue;
-            
+
             try
             {
                 string time = log[1..9];
@@ -149,17 +151,18 @@ class MinecraftHandler
                         // Someone sent a message
                         string sender = logContent[1..logContent.IndexOf(">")];
                         string message = logContent[(logContent.IndexOf(">") + 2)..];
-                        MessageList.Append(new MinecraftMessage{ Content = message, Sender = sender, Time = DateTime.Now });
+                        MessageList.Append(new MinecraftMessage { Content = message, Sender = sender, Time = DateTime.Now });
                     }
                 }
                 else if (logType.Contains("ERROR"))
                 {
-                    if (logContent.Contains("Failed to start the minecraft server")){
+                    if (logContent.Contains("Failed to start the minecraft server"))
+                    {
                         Quit = true;
                         AutoRestart = false;
                         WriteJavaLog();
                         StopServer();
-                        
+
                         Console.WriteLine("Minecraft Server failed to start. Please check the log for more information.");
                     }
                     else
@@ -205,9 +208,9 @@ class MinecraftHandler
         {
             if (!PlayerPlayTime.ContainsKey(player))
                 PlayerPlayTime.Add(player, TimeSpan.Zero);
-            
+
             PlayerPlayTime[player] += DateTime.Now - OnlinePlayers[player];
-            
+
             OnlinePlayers[player] = DateTime.Now;
         }
     }
@@ -220,8 +223,10 @@ class MinecraftHandler
 
     public void RestartIfCrashed()
     {
-        if (java.HasExited){
-            if ((DateTime.Now - StartTime).TotalSeconds < 5){
+        if (java.HasExited)
+        {
+            if ((DateTime.Now - StartTime).TotalSeconds < 5)
+            {
                 Console.WriteLine("Minecraft Server crashed too fast. Is there any error in the arguments?");
                 Console.WriteLine("We will not restart the server to prevent infinite loop.");
                 Quit = true;
@@ -238,13 +243,15 @@ class MinecraftHandler
     }
 
     public void WriteJavaLog()
-    { 
-        using (StreamWriter LogWriter = new StreamWriter(LogFileName, true)){
-            while (JavaLogWritingBuffer.Count > 0){
+    {
+        using (StreamWriter LogWriter = new StreamWriter(LogFileName, true))
+        {
+            while (JavaLogWritingBuffer.Count > 0)
+            {
                 LogWriter.WriteLine(JavaLogWritingBuffer.Dequeue());
             }
         }
-        
+
         JavaLogWritingBuffer.Clear();
     }
 
@@ -258,7 +265,8 @@ class MinecraftHandler
         }
     }
 
-    private void HostLogCycle(){
+    private void HostLogCycle()
+    {
         if (!EventToLog) return;
 
         Console.WriteLine("Loop Count: " + LoopCount + " | " + DateTime.Now.ToShortDateString());
@@ -303,13 +311,14 @@ class MinecraftHandler
         EventToLog = false;
     }
 
-    public void Loop(){
+    public void Loop()
+    {
         if (!IsInitialized) return;
 
         AnalyzeQueuedLog();
 
         if (LoopCount % 5 == 0) Task.Run(() => WriteJavaLog());
-        
+
         // Update Player Play Time every 30 seconds
         if (IsDone && LoopCount % 30 == 0) UpdatePlayerPlayTime();
 

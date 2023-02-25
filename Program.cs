@@ -29,7 +29,8 @@ foreach (string arg in args)
         case "-java":
         case "--java":
             jrePath = val;
-            if (!File.Exists(jrePath)){
+            if (!File.Exists(jrePath))
+            {
                 Console.WriteLine("Java Runtime Environment not found at " + jrePath);
                 Console.WriteLine("Please specify the path to the java executable with the -java argument");
                 Console.WriteLine("Falling back to default java executable");
@@ -84,11 +85,13 @@ Console.WriteLine("Starting http server on http://localhost:" + port);
 httpServer.Run();
 Console.WriteLine("--------------------\n");
 
-while (!minecraftServer.Quit){
+while (!minecraftServer.Quit)
+{
     minecraftServer.Loop();
 }
 
-void PrintUsage(){
+void PrintUsage()
+{
     Console.WriteLine("Minecraft Server Wrapper");
     Console.WriteLine("Usage: ./mc-host [options]");
     Console.WriteLine("Options:");

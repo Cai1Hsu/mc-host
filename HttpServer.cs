@@ -3,7 +3,7 @@ using System.Text;
 
 class HttpServer
 {
-    private string[] prefixes = new string[] { 
+    private string[] prefixes = new string[] {
         "http://localhost:",
         "http://+:"
     };
@@ -13,7 +13,7 @@ class HttpServer
 
     public string Title { get; set; }
 
-    public HttpServer(string port , MinecraftHandler minecraftServer, string title)
+    public HttpServer(string port, MinecraftHandler minecraftServer, string title)
     {
         port = port == null ? "8080" : port;
         this.MinecraftServer = minecraftServer;
@@ -31,7 +31,7 @@ class HttpServer
     private void ListenerCallback(IAsyncResult result)
     {
         HttpListener? listener = (HttpListener?)result.AsyncState;
-        if(listener == null) return;
+        if (listener == null) return;
 
         HttpListenerContext context = listener.EndGetContext(result);
         HttpListenerRequest request = context.Request;
@@ -73,7 +73,7 @@ class HttpServer
             Task.Run(() => MinecraftServer.Restart());
             return $"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><p>Restarting server...</p></body></html>";
         }
-        
+
         // if path is /Stop
         if (absolutePath == "/stop")
         {
@@ -143,7 +143,7 @@ class HttpServer
         {
             response.StatusCode = 200;
             response.ContentType = "text/html";
-            return $"<html><head><title>{Title}</title></head><body><h1>{Title}</h1>" 
+            return $"<html><head><title>{Title}</title></head><body><h1>{Title}</h1>"
                 + "<p>Admin page</p><p>Exec Command</p><input type=\"text\"id=\"command\"name=\"command\"value=\"\"/><button type=\"button\"onclick=\"exec()\">send</button><p>Send Message</p><input type=\"text\"id=\"message\"name=\"message\"value=\"\"/><button type=\"button\"onclick=\"say()\">say</button><p>Control</p><button type=\"button\"onclick=\"window.location.href='/stop'\">stop</button><button type=\"button\"onclick=\"window.location.href='/restart'\">restart</button><button type=\"button\"onclick=\"window.location.href='/save'\">save world</button><button type=\"button\"onclick=\"window.location.href='/printstat'\">print stat</button><script>function exec(){var command=document.getElementById(\"command\").value;var xhr=new XMLHttpRequest();xhr.open(\"GET\",\"/exec?command=\"+command,true);xhr.send()}function say(){var message=document.getElementById(\"message\").value;var xhr=new XMLHttpRequest();xhr.open(\"GET\",\"/say?message=\"+message,true);xhr.send()}function stop(){var xhr=new XMLHttpRequest();xhr.open(\"GET\",\"/stop\",true);xhr.send()}function restart(){var xhr=new XMLHttpRequest();xhr.open(\"GET\",\"/restart\",true);xhr.send()}</script></body></html>";
         }
 
@@ -232,4 +232,4 @@ class HttpServer
 
         listener.BeginGetContext(new AsyncCallback(ListenerCallback), listener);
     }
-} 
+}
