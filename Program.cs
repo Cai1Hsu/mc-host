@@ -3,7 +3,7 @@
 Console.WriteLine("Running under *Debug* mode");
 
 if (args.Length == 0)
-    args = "-Xmx1G -Xms1G -jar server.jar nogui".Split(' ');
+    args = "-rm-lock -kill-jvm -Xmx1G -Xms1G -jar server.jar nogui".Split(' ');
 #endif
 
 if (args.Length == 0)
@@ -11,6 +11,8 @@ if (args.Length == 0)
     PrintUsage();
     return;
 }
+
+string cwd = Environment.CurrentDirectory;
 
 string jrePath = "java";
 
@@ -65,6 +67,18 @@ foreach (string arg in args)
             PrintUsage();
             break;
 
+        case "-rm-lock":
+        case "--rm-lock":
+            RemoveLock();
+            break;
+
+        case "-kill-jvm":
+        case "-kill-java":
+        case "--kill-jvm":
+        case "--kill-java":
+            KillJava();
+            break;
+
         default:
             jvmArgs += arg + " ";
             break;
@@ -105,7 +119,40 @@ void PrintUsage()
     Console.WriteLine("  --port/-p=<port>   Port to run the http server on");
     Console.WriteLine("  --no-autorestart   Disable automatic server restarts");
     Console.WriteLine("  -t --title=<title>  Set the title of the http server");
+    Console.WriteLine("  -rm-lock --rm-lock Remove the session.lock file");
+    Console.WriteLine("  -kill-jvm --kill-jvm Kill all java processes");
     Console.WriteLine("  <jvm args>         Arguments to pass to the java executable");
     Console.WriteLine("                     (e.g. -Xmx2G -Xms2G -jar server.jar nogui)");
     Environment.Exit(0);
+}
+
+void KillJava()
+{
+    System.Diagnostics.Process[] processes = System.Diagnostics.Process.GetProcessesByName("java");
+    foreach (var p in processes)
+    {
+        try
+        {
+            p.Kill();
+        }
+        catch (Exception)
+        {
+
+        }
+    }
+}
+
+void RemoveLock()
+{
+    string lock_file = Path.Combine(cwd, "world/session.lock");
+    
+    try
+    {
+        if (File.Exists(lock_file))
+            File.Delete(lock_file);
+    }
+    catch (Exception)
+    {
+        
+    }
 }
