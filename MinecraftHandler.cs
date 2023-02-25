@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
 
 class MinecraftHandler
 {
@@ -84,6 +85,8 @@ class MinecraftHandler
         LogFileName = $"MinecraftServer-{CrashTimes.Count + crashTimeAddition}.log";
 
         IsInitialized = true;
+
+        if (PlayerPlayTime.Count == 0) ReadStoredTimeStatistics();
     }
 
     public void StopServer()
@@ -283,6 +286,52 @@ class MinecraftHandler
 
     }
 
+    public void SaveTimeStatistics()
+    {
+        try
+        {
+            
+            using (FileStream fs = new FileStream("TimeStatistics.json", FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
+            using (Utf8JsonWriter writer = new Utf8JsonWriter(fs))
+            {
+                writer.WriteStartObject();
+                writer.WritePropertyName("PlayerPlayTime");
+                writer.WriteStartObject();
+                foreach (string player in PlayerPlayTime.Keys)
+                {
+                    writer.WriteNumber(player, (int)Math.Ceiling(PlayerPlayTime[player].TotalMinutes));
+                }
+                writer.WriteEndObject();
+                writer.WriteEndObject();
+            }
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Error occurred when trying to save time statistics.");
+        }
+    }
+
+    public void ReadStoredTimeStatistics()
+    {
+        try
+        {
+            using (FileStream fs = new FileStream("TimeStatistics.json", FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite))
+            using (JsonDocument document = JsonDocument.Parse(fs))
+            {
+                JsonElement root = document.RootElement;
+                JsonElement playerPlayTime = root.GetProperty("PlayerPlayTime");
+                foreach (JsonProperty property in playerPlayTime.EnumerateObject())
+                {
+                    PlayerPlayTime.Add(property.Name, TimeSpan.FromMinutes(property.Value.GetInt32()));
+                }
+            }
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Error occurred when trying to read time statistics.");
+        }
+    }
+
     public void PrintOnlineStatistics()
     {
         SeverMessage("------------------------------ " + DateTime.Now.ToShortTimeString());
@@ -290,7 +339,7 @@ class MinecraftHandler
 
         foreach (string player in PlayerPlayTime.Keys)
         {
-            SeverMessage($"{player}: {PlayerPlayTime[player].TotalMinutes} minutes");
+            SeverMessage($"{player}: {(int)Math.Ceiling(PlayerPlayTime[player].TotalMinutes)} minutes");
         }
 
         SeverMessage("------------------------------");
@@ -352,10 +401,13 @@ class MinecraftHandler
 
         // Update Player Play Time every 30 seconds
         if (IsDone && LoopCount % 30 == 0) UpdatePlayerPlayTime();
+        
+        if (IsDone && LoopCount % 60 == 0 && PlayerPlayTime.Count > 0) Task.Run(() => SaveTimeStatistics());
 
         if (IsDone && LoopCount % 1200 == 0) SendCommand("save-all");
 
         if (IsDone && LoopCount % 1200 == 0 && PlayerPlayTime.Count > 0) Task.Run(() => PrintOnlineStatistics());
+
 
         RestartIfCrashed();
 
