@@ -145,7 +145,7 @@ void KillJava()
 void RemoveLock()
 {
     string lock_file = Path.Combine(cwd, "world/session.lock");
-    
+
     try
     {
         if (File.Exists(lock_file))
@@ -153,6 +153,6 @@ void RemoveLock()
     }
     catch (Exception)
     {
-        
+
     }
 }

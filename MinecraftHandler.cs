@@ -157,7 +157,7 @@ class MinecraftHandler
                         RecentLeftPlayer.Enqueue(playerName);
                         EventToLog = true;
                     }
-                    else if(!IsDone && logContent.Contains("You need to agree to the EULA"))
+                    else if (!IsDone && logContent.Contains("You need to agree to the EULA"))
                     {
                         Quit = true;
                         AutoRestart = false;
@@ -210,12 +210,12 @@ class MinecraftHandler
 
         try
         {
-            java.StandardInput.WriteLine(command);            
+            java.StandardInput.WriteLine(command);
             return true;
         }
         catch (Exception)
         {
-            
+
         }
 
         return false;
@@ -290,7 +290,7 @@ class MinecraftHandler
     {
         try
         {
-            
+
             using (FileStream fs = new FileStream("TimeStatistics.json", FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
             using (Utf8JsonWriter writer = new Utf8JsonWriter(fs))
             {
@@ -401,13 +401,12 @@ class MinecraftHandler
 
         // Update Player Play Time every 30 seconds
         if (IsDone && LoopCount % 30 == 0) UpdatePlayerPlayTime();
-        
+
         if (IsDone && LoopCount % 60 == 0 && PlayerPlayTime.Count > 0) Task.Run(() => SaveTimeStatistics());
 
         if (IsDone && LoopCount % 1200 == 0) SendCommand("save-all");
 
         if (IsDone && LoopCount % 1200 == 0 && PlayerPlayTime.Count > 0) Task.Run(() => PrintOnlineStatistics());
-
 
         RestartIfCrashed();
 
