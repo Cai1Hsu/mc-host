@@ -88,7 +88,10 @@ class MinecraftHandler
 
     public void StopServer()
     {
+        SendCommand("/stop", true);
         IsInitialized = false;
+        Quit = true;
+        AutoRestart = false;
         java.Kill();
     }
 
@@ -167,7 +170,7 @@ class MinecraftHandler
                         WriteJavaLog();
                         StopServer();
 
-                        Console.WriteLine("Minecraft Server failed to start. Please check the log for more information.");
+                        Console.WriteLine("Minecraft Server failed to start. Maybe the lock file was occupied");
                         Environment.Exit(1);
                     }
                     else
@@ -194,9 +197,9 @@ class MinecraftHandler
         }
     }
 
-    public bool SendCommand(string command)
+    public bool SendCommand(string command, bool force = false)
     {
-        if (!IsDone) return false;
+        if (!IsDone && !force) return false;
 
         java.StandardInput.WriteLine(command);
         return true;
