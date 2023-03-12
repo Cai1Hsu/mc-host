@@ -175,7 +175,15 @@ class MinecraftHandler
         SendCommand($"/tellraw @a {{\"text\":\"{message}\"}}");
     }
 
-    public void UpdatePlayerPlayTime()
+    public void UpdatePlayerPlayTime(string player)
+    {
+        if (!PlayerPlayTime.ContainsKey(player))
+            PlayerPlayTime.Add(player, TimeSpan.Zero);
+
+        PlayerPlayTime[player] += DateTime.Now - OnlinePlayers[player];
+    }
+
+    public void UpdateAllPlayerPlayTime()
     {
         foreach (string player in OnlinePlayers.Keys)
         {
@@ -183,9 +191,15 @@ class MinecraftHandler
                 PlayerPlayTime.Add(player, TimeSpan.Zero);
 
             PlayerPlayTime[player] += DateTime.Now - OnlinePlayers[player];
-
-            OnlinePlayers[player] = DateTime.Now;
         }
+    }
+
+    public TimeSpan GetPlayerPlayTime(string player)
+    {
+        if (!PlayerPlayTime.ContainsKey(player))
+            PlayerPlayTime.Add(player, TimeSpan.Zero);
+
+        return PlayerPlayTime[player] + (OnlinePlayers.ContainsKey(player) ? DateTime.Now - OnlinePlayers[player] : TimeSpan.Zero);
     }
 
     public void Restart()
@@ -255,7 +269,7 @@ class MinecraftHandler
                 writer.WriteStartObject();
                 foreach (string player in PlayerPlayTime.Keys)
                 {
-                    writer.WriteNumber(player, (int)Math.Ceiling(PlayerPlayTime[player].TotalMinutes));
+                    writer.WriteNumber(player, (int)Math.Ceiling(GetPlayerPlayTime(player).TotalMinutes));
                 }
                 writer.WriteEndObject();
                 writer.WriteEndObject();
@@ -295,23 +309,23 @@ class MinecraftHandler
 
         foreach (string player in PlayerPlayTime.Keys)
         {
-            ServerPublicRawMessage($"{player}: {(int)Math.Ceiling(PlayerPlayTime[player].TotalMinutes)} minutes");
+            ServerPublicRawMessage($"{player}: {(int)Math.Ceiling(GetPlayerPlayTime(player).TotalMinutes)} minutes");
         }
 
         ServerPublicRawMessage("-------------------------");
     }
 
-    public void PrivatePrintOnlineStatistics(string player)
+    public void PrivatePrintOnlineStatistics(string caller)
     {
-        ServerPrivateRawMessage("------------------------- " + DateTime.Now.ToShortTimeString(), player);
-        ServerPrivateRawMessage("Online Time Statistics:", player);
+        ServerPrivateRawMessage("------------------------- " + DateTime.Now.ToShortTimeString(), caller);
+        ServerPrivateRawMessage("Online Time Statistics:", caller);
 
-        foreach (string p in PlayerPlayTime.Keys)
+        foreach (string player in PlayerPlayTime.Keys)
         {
-            ServerPrivateRawMessage($"{p}: {(int)Math.Ceiling(PlayerPlayTime[p].TotalMinutes)} minutes", player);
+            ServerPrivateRawMessage($"{player}: {(int)Math.Ceiling(GetPlayerPlayTime(player).TotalMinutes)} minutes", caller);
         }
 
-        ServerPrivateRawMessage("-------------------------", player);
+        ServerPrivateRawMessage("-------------------------", caller);
     }
 
     private void HostLogCycle()
@@ -369,13 +383,13 @@ class MinecraftHandler
         if (LoopCount % 5 == 0) Task.Run(() => WriteJavaLog());
 
         // Update Player Play Time every 30 seconds
-        if (IsDone && LoopCount % 30 == 0) UpdatePlayerPlayTime();
+        // if (IsDone && LoopCount % 30 == 0) UpdatePlayerPlayTime();
 
         if (IsDone && LoopCount % 60 == 0 && PlayerPlayTime.Count > 0) Task.Run(() => SaveTimeStatistics());
 
         if (IsDone && LoopCount % 1200 == 0) SendCommand("save-all");
 
-        if (IsDone && LoopCount % 1200 == 0 && PlayerPlayTime.Count > 0) Task.Run(() => PublicPrintOnlineStatistics());
+        if (IsDone && LoopCount % 1200 == 0 && OnlinePlayers.Count > 0) Task.Run(() => PublicPrintOnlineStatistics());
 
         RestartIfCrashed();
 

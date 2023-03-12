@@ -132,9 +132,9 @@ class HttpServer
             response.ContentType = "text/html";
             StringBuilder sb = new StringBuilder();
             sb.Append($"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><p>Statistics:</p><ul>");
-            foreach (string player in MinecraftServer.PlayerPlayTime.Keys)
+            foreach (string player in MinecraftServer.OnlinePlayers.Keys)
             {
-                sb.Append($"<li>{player}: {(int)Math.Ceiling(MinecraftServer.PlayerPlayTime[player].TotalMinutes)} minutes</li>");
+                sb.Append($"<li>{player}: {(int)Math.Ceiling(MinecraftServer.GetPlayerPlayTime(player).TotalMinutes)} minutes</li>");
             }
             sb.Append("</ul></body></html>");
             return sb.ToString();
@@ -212,9 +212,9 @@ class HttpServer
         sb.Append("</ul>");
 
         sb.Append("<p>Statistics:</p><ul>");
-        foreach (string player in MinecraftServer.PlayerPlayTime.Keys)
+        foreach (string player in MinecraftServer.OnlinePlayers.Keys)
         {
-            sb.Append($"<li>{player}: {(int)Math.Ceiling(MinecraftServer.PlayerPlayTime[player].TotalMinutes)} minutes</li>");
+            sb.Append($"<li>{player}: {(int)Math.Ceiling(MinecraftServer.GetPlayerPlayTime(player).TotalMinutes)} minutes</li>");
         }
         sb.Append("</ul>");
 
