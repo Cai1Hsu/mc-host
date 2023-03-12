@@ -10,11 +10,12 @@ class CustomCommandManager
     // Dictionary<command, description>;
     public Dictionary<string, string> BuiltInCommands = new Dictionary<string, string>()
     {
-        { "help",       ".help           Show help message" },
-        { "set",        ".set  [command] Set a custom message or command" },
-        { "del",        ".del  [command] Delete a custom message or command" },
-        { "printstat",  ".printstat      Print Players online statistics"},
-        { "getmsg",     ".getmsg [line]  Get message list"},
+        { "help",       ".help            Show help message" },
+        { "set",        ".set   [command] Set a custom message or command" },
+        { "alias",      ".alias [command] Set a custom message or command" },
+        { "del",        ".del   [command] Delete a custom message or command" },
+        { "printstat",  ".printstat       Print Players online statistics"},
+        { "getmsg",     ".getmsg [line]   Get message list"},
     };
 
     // Dictionary<player, Dictionary<command, option>>
@@ -54,7 +55,7 @@ class CustomCommandManager
         
         string option = command[command.IndexOf(' ')..];
 
-        if (flag == "set")
+        if (flag == "set" || flag == "alias")
         {
             string[] options = option.Split(' ');
             if (options.Length < 2)
