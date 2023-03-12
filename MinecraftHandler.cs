@@ -53,7 +53,9 @@ class MinecraftHandler
 
     public DateTime StartTime { get; set; } = DateTime.Now;
 
-    private LogAnalyzer logAnalyzer = null!;
+    private LogAnalyzer logAnalyzer;
+
+    public CustomCommandManager customCommandManager;
 
     public MinecraftHandler(string jrePath, string jvmArgs, bool autoRestart = true)
     {
@@ -71,6 +73,7 @@ class MinecraftHandler
         OnlinePlayers = new Dictionary<string, DateTime>();
         PlayerPlayTime = new Dictionary<string, TimeSpan>();
         logAnalyzer = new LogAnalyzer(this);
+        customCommandManager = new CustomCommandManager(this);
         EventToLog = true;
     }
 
@@ -157,6 +160,21 @@ class MinecraftHandler
         SendCommand($"/say {message}");
     }
 
+    public void ServerPrivateRawMessage(string message, string player)
+    {
+         SendCommand($"/tellraw {player} {{\"text\":\"{message}\"}}");
+    }
+
+    public void ServerAnnounceMessage(string message)
+    {
+        SendCommand($"/title @a title {message}");
+    }
+
+    public void ServerPublicRawMessage(string message)
+    {
+        SendCommand($"/tellraw @a {{\"text\":\"{message}\"}}");
+    }
+
     public void UpdatePlayerPlayTime()
     {
         foreach (string player in OnlinePlayers.Keys)
@@ -189,7 +207,7 @@ class MinecraftHandler
                 Environment.Exit(0);
             }
 
-            if (java.ExitTime == null)
+            if (java.ExitTime == null || (DateTime.Now - java.ExitTime).TotalSeconds < 3)
             {
                 Console.WriteLine("Minecraft Server crashed too fast. Is there any error in the arguments?");
                 Console.WriteLine("We will not restart the server to prevent infinite loop.");
@@ -270,17 +288,30 @@ class MinecraftHandler
         }
     }
 
-    public void PrintOnlineStatistics()
+    public void PublicPrintOnlineStatistics()
     {
-        SeverMessage("------------------------- " + DateTime.Now.ToShortTimeString());
-        SeverMessage("Online Time Statistics:");
+        ServerPublicRawMessage("------------------------- " + DateTime.Now.ToShortTimeString());
+        ServerPublicRawMessage("Online Time Statistics:");
 
         foreach (string player in PlayerPlayTime.Keys)
         {
-            SeverMessage($"{player}: {(int)Math.Ceiling(PlayerPlayTime[player].TotalMinutes)} minutes");
+            ServerPublicRawMessage($"{player}: {(int)Math.Ceiling(PlayerPlayTime[player].TotalMinutes)} minutes");
         }
 
-        SeverMessage("-------------------------");
+        ServerPublicRawMessage("-------------------------");
+    }
+
+    public void PrivatePrintOnlineStatistics(string player)
+    {
+        ServerPrivateRawMessage("------------------------- " + DateTime.Now.ToShortTimeString(), player);
+        ServerPrivateRawMessage("Online Time Statistics:", player);
+
+        foreach (string p in PlayerPlayTime.Keys)
+        {
+            ServerPrivateRawMessage($"{p}: {(int)Math.Ceiling(PlayerPlayTime[p].TotalMinutes)} minutes", player);
+        }
+
+        ServerPrivateRawMessage("-------------------------", player);
     }
 
     private void HostLogCycle()
@@ -344,7 +375,7 @@ class MinecraftHandler
 
         if (IsDone && LoopCount % 1200 == 0) SendCommand("save-all");
 
-        if (IsDone && LoopCount % 1200 == 0 && PlayerPlayTime.Count > 0) Task.Run(() => PrintOnlineStatistics());
+        if (IsDone && LoopCount % 1200 == 0 && PlayerPlayTime.Count > 0) Task.Run(() => PublicPrintOnlineStatistics());
 
         RestartIfCrashed();
 

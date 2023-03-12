@@ -187,7 +187,7 @@ class HttpServer
         {
             response.StatusCode = 200;
             response.ContentType = "text/html";
-            Task.Run(() => MinecraftServer.PrintOnlineStatistics());
+            Task.Run(() => MinecraftServer.PublicPrintOnlineStatistics());
             return $"<html><head><title>{Title}</title></head><body><h1>{Title}</h1><p>Printed Statistics</p></body></html>";
         }
 

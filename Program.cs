@@ -29,6 +29,8 @@ string jar = ".jar";
 
 bool AutoRestart = true;
 
+bool NoHttp = false;
+
 foreach (string arg in args)
 {
     string[] split = arg.Split('=');
@@ -84,6 +86,11 @@ foreach (string arg in args)
             KillJava();
             break;
 
+        case "-no-http":
+        case "--no-http":
+            NoHttp = true;
+            break;
+
         default:
             jvmArgs += arg + " ";
             break;
@@ -106,9 +113,13 @@ Console.WriteLine("Log file will be saved as MinecraftServer-" + minecraftServer
 minecraftServer.StartMinecraft();
 Console.CancelKeyPress += (sender, args) => minecraftServer.TerminateServer();
 
-Console.WriteLine("Minecraft Server started");
-Console.WriteLine("Starting http server on http://localhost:" + port);
-httpServer.Run();
+if (!NoHttp)
+{
+    Console.WriteLine("Minecraft Server started");
+    Console.WriteLine("Starting http server on http://localhost:" + port);
+    httpServer.Run();
+}
+
 Console.WriteLine("--------------------\n");
 
 while (!minecraftServer.Quit)
@@ -125,6 +136,7 @@ void PrintUsage()
     Console.WriteLine("  --java=<path>      Path to the java executable");
     Console.WriteLine("  --port/-p=<port>   Port to run the http server on");
     Console.WriteLine("  --no-autorestart   Disable automatic server restarts");
+    Console.WriteLine("  --no-http          Disable the http server");
     Console.WriteLine("  -t --title=<title>  Set the title of the http server");
     Console.WriteLine("  -rm-lock --rm-lock Remove the session.lock file");
     Console.WriteLine("  -kill-jvm --kill-jvm Kill all java processes with the server's .jar file");

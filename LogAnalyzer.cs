@@ -89,6 +89,18 @@ class LogAnalyzer
             string sender = logContent[1..logContent.IndexOf(">")];
             string message = logContent[(logContent.IndexOf(">") + 2)..];
             localMinecraftHandler.MessageList.Add(new PlayerMessage { Content = message, Sender = sender, Time = DateTime.Now });
+            
+            if (message.StartsWith('.'))
+            {
+                try
+                {
+                    localMinecraftHandler.customCommandManager.ExecuteCustomCommand(message, sender);
+                }
+                catch (Exception)
+                {
+
+                }
+            }
         }
         // Player joined the game
         else if (logContent.Contains("joined the game"))

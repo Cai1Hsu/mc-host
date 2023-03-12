@@ -1,10 +1,26 @@
-static class CustomCommandManager
+using System;
+using System.Collections.Generic;
+class CustomCommandManager
 {
-    // Dictionary<command, option>;
-    public Dictionary<string, string> PublicCommands = new Dictionary<string, string>();
+    private MinecraftHandler MCSV;
+
+    // Dictionary<command, description>;
+    public Dictionary<string, string> BuiltInCommands = new Dictionary<string, string>()
+    {
+        { "help",       ".help           Show help message" },
+        { "set",        ".set  [command] Set a custom message or command" },
+        { "del",        ".del  [command] Delete a custom message or command" },
+        { "printstat",  ".printstat      Print Players online statistics"},
+        { "getmsg",     ".getmsg [line]  Get message list"},
+    };
 
     // Dictionary<player, Dictionary<command, option>>
     public Dictionary<string, Dictionary<string, string>> PrivateCommands = new Dictionary<string, Dictionary<string, string>>();
+
+    public CustomCommandManager(MinecraftHandler minecraftHandler)
+    {
+        MCSV = minecraftHandler;
+    }
 
     public void ExecuteCustomCommand(string command, string sender)
     {
@@ -12,22 +28,17 @@ static class CustomCommandManager
         
         if (command[1] != '.')
         {
-            ExecutePublicCommand(command[1..]);
+            ExecuteCommand(command[2..], sender, false);
         }
         else
         {
             if (command.Length == 2) return;
             
-            ExecutePrivateCommand(command[2..], sender);
+            ExecuteCommand(command[1..], sender, true);
         }
     }
 
-    public void ExecutePublicCommand(string command)
-    {
-        string flag = command[0..command.IndexOf(' ')].ToLower();
-    }
-
-    public void ExecutePrivateCommand(string command, bool isPublicCommand, string sender)
+    public void ExecuteCommand(string command, string sender, bool isPublicCommand)
     {
         string flag = command[0..command.IndexOf(' ')].ToLower();
         
@@ -36,48 +47,153 @@ static class CustomCommandManager
         if (flag == "set")
         {
             string[] options = option.Split(' ');
-            string key = options[0];
-            string val = option[1].Trim('"');
-            
-            if (isPublicCommand)
+            if (options.Length < 2)
             {
-                PublicCommands[key] = val;
-                MinecraftHander.SendMessage("");
+                MCSV.ServerPrivateRawMessage("[!] Please specify the command", sender);
+                return;
+            }
+
+            string key = options[0];
+            string val = options[1].Trim('"');
+            
+            if (BuiltInCommands.ContainsKey(key))
+            {
+                MCSV.ServerPrivateRawMessage("[!] Can NOT redefine built-in commands", sender);
+                MCSV.ServerPrivateRawMessage("[!] Use \".set\" to set your private commands", sender);
             }
             else
             {
-                PrivateCommands[sender][key] = val;
-                MinecraftHander.SendPrivateMessage("");
+                if (PrivateCommands.ContainsKey(sender))
+                {
+                    PrivateCommands[sender].Add(key, val);
+                }
+                else
+                {
+                    PrivateCommands.Add(sender, new Dictionary<string, string>());
+                    PrivateCommands[sender].Add(key, val);
+                }
             }
 
             SaveCommands();
         }
+        else if (flag == "del")
+        {
+            string[] options = option.Split(' ');
+            if (options.Length == 0)
+            {
+                MCSV.ServerPrivateRawMessage("[!] Please specify the command", sender);
+                return;
+            }
+
+            string key = options[0];
+
+            if (PrivateCommands.ContainsKey(sender))
+            {
+                if (PrivateCommands[sender].ContainsKey(key))
+                {
+                    PrivateCommands[sender].Remove(key);
+                }
+                else
+                {
+                    MCSV.ServerPrivateRawMessage("[!] Can NOT find the command", sender);
+                }
+            }
+            else
+            {
+                MCSV.ServerPrivateRawMessage("[!] Can NOT find the command", sender);
+            }
+        }
         else if (flag == "help")
         {
-            MinecraftHander.SendPrivateMessage("");
+            MCSV.ServerPrivateRawMessage("Built-in commands:", sender);
             
-            foreach (var public_command in PublicCommands.Keys)
+            foreach (var public_command in BuiltInCommands.Keys)
             {
-
+                string description = BuiltInCommands[public_command];
+                MCSV.ServerPrivateRawMessage($"  {description}", sender);
             }
             
-            MinecraftHander.SendPrivateMessage("Your private commands:");
-
-            foreach (var private_command in PrivateCommands.keys)
+            if (PrivateCommands.ContainsKey(sender))
             {
+                MCSV.ServerPrivateRawMessage("Your private commands:", sender);
 
+                foreach (var private_command in PrivateCommands[sender].Keys)
+                {
+                    MCSV.ServerPrivateRawMessage($"  .{private_command}", sender);
+                }
+            }
+            else
+            {
+                MCSV.ServerPrivateRawMessage("You have no private commands", sender);
+            }
+        }
+        else if (flag == "printstat")
+        {
+            MCSV.PrivatePrintOnlineStatistics(sender);
+        }
+        else if (flag == "getmsg")
+        {
+            string[] options = option.Split(' ');
+            if (options.Length == 0)
+            {
+                PlayerMessage msg = MCSV.MessageList[MCSV.MessageList.Count - 1];
+                MCSV.ServerPrivateRawMessage($"[!] [{msg.Time.ToShortTimeString()}] <{msg.Sender}>: {msg.Content}", sender);
+                return;
+            }
+
+            string line = options[0];
+
+            if (!int.TryParse(line, out int l))
+            {
+                MCSV.ServerPrivateRawMessage($"[!] \"{line}\" is a invalid line number", sender);
+                return;
+            }
+            else
+            {
+                if (l > MCSV.MessageList.Count || l < 1)
+                {
+                    MCSV.ServerPrivateRawMessage($"[!] \"{line}\" is a invalid line number", sender);
+                    return;
+                }
+
+                PlayerMessage msg = MCSV.MessageList[MCSV.MessageList.Count - l - 1];
+                MCSV.ServerPrivateRawMessage($"[!] [{msg.Time.ToShortTimeString()}] <{msg.Sender}>: {msg.Content}", sender);
             }
         }
         // parse command
         else
         {
-            if (isPublicCommand)
+            if (BuiltInCommands.ContainsKey(flag))
             {
-
+                MCSV.ServerPrivateRawMessage($"[!] {BuiltInCommands[flag]}", sender);
             }
             else
             {
-                
+                if (PrivateCommands.ContainsKey(sender))
+                {
+                    if (PrivateCommands[sender].ContainsKey(flag))
+                    {
+                        if (PrivateCommands[sender][flag].StartsWith("/"))
+                        {
+                            MCSV.SendCommand(PrivateCommands[sender][flag]);
+                        }
+                        else
+                        {
+                            if (isPublicCommand)
+                                MCSV.ServerPublicRawMessage($"{flag}: {PrivateCommands[sender][flag]}");
+                            else
+                                MCSV.ServerPrivateRawMessage($"{flag}: {PrivateCommands[sender][flag]}", sender);
+                        }
+                    }
+                    else
+                    {
+                        MCSV.ServerPrivateRawMessage($"[!] Unknown command: {flag}", sender);
+                    }
+                }
+                else
+                {
+                    MCSV.ServerPrivateRawMessage($"[!] Unknown command: {flag}", sender);
+                }
             }
         }
     }
