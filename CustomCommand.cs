@@ -1,5 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 class CustomCommandManager
 {
     private MinecraftHandler MCSV;
@@ -15,11 +19,18 @@ class CustomCommandManager
     };
 
     // Dictionary<player, Dictionary<command, option>>
-    public Dictionary<string, Dictionary<string, string>> PrivateCommands = new Dictionary<string, Dictionary<string, string>>();
+    public Dictionary<string, Dictionary<string, string>> PrivateCommands;
 
     public CustomCommandManager(MinecraftHandler minecraftHandler)
     {
         MCSV = minecraftHandler;
+
+        LoadCommands();
+
+        if (PrivateCommands == null)
+        {
+            PrivateCommands = new Dictionary<string, Dictionary<string, string>>();
+        }
     }
 
     public void ExecuteCustomCommand(string command, string sender)
@@ -200,7 +211,36 @@ class CustomCommandManager
 
     public void SaveCommands()
     {
+        try
+        {
+            using (FileStream fs = new FileStream("CustomCommands.json", FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
+            using (Utf8JsonWriter writer = new Utf8JsonWriter(fs))
+            {
+                JsonSerializer.Serialize(writer, PrivateCommands);
 
+            }
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Error occurred when trying to save time statistics.");
+        }
+    }
+
+    public void LoadCommands()
+    {
+        try
+        {
+            using (FileStream fs = new FileStream("CustomCommands.json", FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite))
+            using (StreamReader reader = new StreamReader(fs))
+            {
+                string json = reader.ReadToEnd();
+                PrivateCommands = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(json) ?? new Dictionary<string, Dictionary<string, string>>();
+            }
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Error occurred when trying to load time statistics.");
+        }
     }
 }
 
