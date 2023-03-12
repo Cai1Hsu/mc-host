@@ -75,6 +75,8 @@ class MinecraftHandler
         logAnalyzer = new LogAnalyzer(this);
         customCommandManager = new CustomCommandManager(this);
         EventToLog = true;
+
+        LoadMessageList();
     }
 
     public void StartMinecraft()
@@ -374,6 +376,59 @@ class MinecraftHandler
         EventToLog = false;
     }
 
+    private void LoadMessageList()
+    {
+        try
+        {
+            using (FileStream fs = new FileStream("MessageList.json", FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite))
+            using (JsonDocument document = JsonDocument.Parse(fs))
+            {
+                JsonElement root = document.RootElement;
+                JsonElement messageList = root.GetProperty("MessageList");
+                foreach (JsonElement message in messageList.EnumerateArray())
+                {
+                    PlayerMessage playerMessage = new PlayerMessage();
+                    playerMessage.Time = new DateTime(long.Parse(message.GetProperty("Time").GetString() ?? "0"));
+                    playerMessage.Sender = message.GetProperty("Player").GetString() ?? "Unknown";
+                    playerMessage.Content = message.GetProperty("Message").GetString() ?? "Unknown";
+                    MessageList.Add(playerMessage);
+                }
+            }
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Error occurred when trying to load message list.");
+        }
+    }
+
+    private void SaveMessageList()
+    {
+        try
+        {
+            using (FileStream fs = new FileStream("MessageList.json", FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
+            using (Utf8JsonWriter writer = new Utf8JsonWriter(fs))
+            {
+                writer.WriteStartObject();
+                writer.WritePropertyName("MessageList");
+                writer.WriteStartArray();
+                foreach (PlayerMessage message in MessageList)
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("Time", message.Time.Ticks.ToString());
+                    writer.WriteString("Player", message.Sender);
+                    writer.WriteString("Message", message.Content);
+                    writer.WriteEndObject();
+                }
+                writer.WriteEndArray();
+                writer.WriteEndObject();
+            }
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Error occurred when trying to save message list.");
+        }    
+    }
+
     public void Loop()
     {
         if (!IsInitialized) return;
@@ -384,6 +439,8 @@ class MinecraftHandler
 
         // Update Player Play Time every 30 seconds
         // if (IsDone && LoopCount % 30 == 0) UpdatePlayerPlayTime();
+
+        if (IsDone && LoopCount % 60 == 0) SaveMessageList();
 
         if (IsDone && LoopCount % 60 == 0 && PlayerPlayTime.Count > 0) Task.Run(() => SaveTimeStatistics());
 
@@ -398,4 +455,5 @@ class MinecraftHandler
         LoopCount++;
         Thread.Sleep(1000);
     }
+
 }
