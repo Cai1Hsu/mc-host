@@ -39,13 +39,13 @@ class CustomCommandManager
         
         if (command[1] != '.')
         {
-            ExecuteCommand(command[2..], sender, false);
+            ExecuteCommand(command[1..], sender, false);
         }
         else
         {
             if (command.Length == 2) return;
             
-            ExecuteCommand(command[1..], sender, true);
+            ExecuteCommand(command[2..], sender, true);
         }
     }
 
@@ -216,8 +216,21 @@ class CustomCommandManager
             using (FileStream fs = new FileStream("CustomCommands.json", FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
             using (Utf8JsonWriter writer = new Utf8JsonWriter(fs))
             {
-                JsonSerializer.Serialize(writer, PrivateCommands);
-
+                writer.WriteStartObject();
+                writer.WritePropertyName("CustomCommands");
+                writer.WriteStartObject();
+                foreach (string player in PrivateCommands.Keys)
+                {
+                    writer.WritePropertyName(player);
+                    writer.WriteStartObject();
+                    foreach (string command in PrivateCommands[player].Keys)
+                    {
+                        writer.WriteString(command, PrivateCommands[player][command]);
+                    }
+                    writer.WriteEndObject();
+                }
+                writer.WriteEndObject();
+                writer.WriteEndObject();
             }
         }
         catch (Exception)
@@ -230,11 +243,23 @@ class CustomCommandManager
     {
         try
         {
-            using (FileStream fs = new FileStream("CustomCommands.json", FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite))
-            using (StreamReader reader = new StreamReader(fs))
+            using (FileStream fs = new FileStream("TimeStatistics.json", FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite))
+            using (JsonDocument document = JsonDocument.Parse(fs))
             {
-                string json = reader.ReadToEnd();
-                PrivateCommands = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(json) ?? new Dictionary<string, Dictionary<string, string>>();
+                JsonElement root = document.RootElement;
+                JsonElement playerPlayTime = root.GetProperty("CustomCommands");
+                foreach (JsonProperty player in playerPlayTime.EnumerateObject())
+                {
+                    string playerName = player.Name;
+                    PrivateCommands.Add(playerName, new Dictionary<string, string>());
+                    foreach (JsonProperty command in player.Value.EnumerateObject())
+                    {
+                        string commandName = command.Name;
+                        string commandValue = command.Value.GetString() ?? "";
+                        PrivateCommands[playerName].Add(commandName, commandValue);
+                    }
+                }
+                
             }
         }
         catch (Exception)
