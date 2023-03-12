@@ -33,11 +33,9 @@ class MinecraftHandler
 
     public bool IsDone { get; set; } = false;
 
-    private Queue<string> LogAnalysisQueue = new Queue<string>();
+    public Queue<string> RecentConnectedPlayer = new Queue<string>();
 
-    private Queue<string> RecentConnectedPlayer = new Queue<string>();
-
-    private Queue<string> RecentLeftPlayer = new Queue<string>();
+    public Queue<string> RecentLeftPlayer = new Queue<string>();
 
     public string LogFileName = string.Empty;
 
@@ -51,9 +49,11 @@ class MinecraftHandler
 
     public bool Quit { get; set; } = false;
 
-    private bool EventToLog = true;
+    public bool EventToLog = true;
 
     public DateTime StartTime { get; set; } = DateTime.Now;
+
+    private LogAnalyzer logAnalyzer = null!;
 
     public MinecraftHandler(string jrePath, string jvmArgs, bool autoRestart = true)
     {
@@ -70,6 +70,7 @@ class MinecraftHandler
         CrashTimes = new List<DateTime>();
         OnlinePlayers = new Dictionary<string, DateTime>();
         PlayerPlayTime = new Dictionary<string, TimeSpan>();
+        logAnalyzer = new LogAnalyzer(this);
         EventToLog = true;
     }
 
@@ -86,7 +87,7 @@ class MinecraftHandler
 
         StoragedLog = new List<string>();
         IsDone = false;
-        LogAnalysisQueue.Clear();
+        logAnalyzer.LogAnalysisQueue.Clear();
         LogFileName = $"MinecraftServer-{CrashTimes.Count + crashTimeAddition}.log";
 
         IsInitialized = true;
@@ -123,96 +124,14 @@ class MinecraftHandler
         StoragedLog.Add(data);
         ServerLogBuilder.AppendLine(data);
         JavaLogWritingBuffer.Enqueue(data);
-        LogAnalysisQueue.Enqueue(data);
-    }
-
-    private void AnalyzeQueuedLog()
-    {
-        while (LogAnalysisQueue.Count > 0)
+        
+        try
         {
-            string log = LogAnalysisQueue.Dequeue();
-            // [07:28:21] [Server thread/INFO]: Done (2.958s)! For help, type "help"
-            if (log[0] != '[') continue;
-
-            int logTypeEndIndex = log.IndexOf("]:");
-            if (logTypeEndIndex == -1 || log.Length < 12) continue;
-
-            try
-            {
-                string time = log[1..9];
-                string logType = log[12..logTypeEndIndex];
-                string logContent = log[(logTypeEndIndex + 3)..];
-
-                if (logType.Contains("INFO"))
-                {
-                    // message
-                    if (logContent.StartsWith("<"))
-                    {
-                        // Someone sent a message
-                        string sender = logContent[1..logContent.IndexOf(">")];
-                        string message = logContent[(logContent.IndexOf(">") + 2)..];
-                        MessageList.Add(new PlayerMessage { Content = message, Sender = sender, Time = DateTime.Now });
-                    }
-                    // Player joined the game
-                    else if (logContent.Contains("joined the game"))
-                    {
-                        string playerName = logContent[0..logContent.IndexOf(" ")];
-                        OnlinePlayers.Add(playerName, DateTime.Now);
-                        RecentConnectedPlayer.Enqueue(playerName);
-                        EventToLog = true;
-                    }
-                    // Player left the game
-                    else if (logContent.Contains("left the game"))
-                    {
-                        string playerName = logContent[0..logContent.IndexOf(" ")];
-                        OnlinePlayers.Remove(playerName);
-                        RecentLeftPlayer.Enqueue(playerName);
-                        EventToLog = true;
-                    }
-                    else if (!IsDone && logContent.Contains("You need to agree to the EULA"))
-                    {
-                        Quit = true;
-                        AutoRestart = false;
-                        Console.WriteLine("You need to agree to the EULA in order to run the server.");
-                    }
-                }
-                else if (logType.Contains("ERROR"))
-                {
-                    if (logContent.Contains("Failed to start the minecraft server"))
-                    {
-                        WriteJavaLog();
-                        TerminateServer();
-
-                        Console.WriteLine("Minecraft Server failed to start. Maybe the lock file was occupied");
-                        Environment.Exit(1);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Minecraft Server encountered an unexpected error.");
-                    }
-                    Console.WriteLine("Error information: " + logContent);
-                    Console.WriteLine("Log file: " + LogFileName);
-
-                }
-                else if (logType.Contains("WARN"))
-                {
-                    if (!IsDone && logContent.StartsWith("Perhaps a server is already running"))
-                    {
-                        Console.WriteLine("**** FAILED TO BIND TO PORT!");
-                        Console.WriteLine("Perhaps a server is already running on that port?");
-                        TerminateServer();
-                    }
-                }
-                /* Current not used
-                else if (logType.Contains("FATAL"))
-                {
-                }
-                */
-            }
-            catch (System.IndexOutOfRangeException)
-            {
-                continue;
-            }
+            logAnalyzer.AnalyzeLog(data);
+        }
+        catch(Exception)
+        {
+            logAnalyzer.LogAnalysisQueue.Enqueue(data);
         }
     }
 
@@ -261,13 +180,21 @@ class MinecraftHandler
     {
         if (java.HasExited)
         {
-            if ((DateTime.Now - StartTime).TotalSeconds < 5)
+            if (java.ExitCode == 0)
+            {
+                Quit = true;
+                AutoRestart = false;
+                
+                // TODO ?
+                Environment.Exit(0);
+            }
+
+            if (java.ExitTime == null)
             {
                 Console.WriteLine("Minecraft Server crashed too fast. Is there any error in the arguments?");
                 Console.WriteLine("We will not restart the server to prevent infinite loop.");
                 Quit = true;
                 AutoRestart = false;
-                java.Kill();
                 Environment.Exit(1);
             }
 
@@ -302,7 +229,6 @@ class MinecraftHandler
     {
         try
         {
-
             using (FileStream fs = new FileStream("TimeStatistics.json", FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
             using (Utf8JsonWriter writer = new Utf8JsonWriter(fs))
             {
@@ -407,7 +333,7 @@ class MinecraftHandler
     {
         if (!IsInitialized) return;
 
-        AnalyzeQueuedLog();
+        logAnalyzer.AnalyzeQueuedLog();
 
         if (LoopCount % 5 == 0) Task.Run(() => WriteJavaLog());
 
