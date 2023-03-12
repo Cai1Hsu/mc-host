@@ -16,6 +16,7 @@ class CustomCommandManager
         { "del",        ".del   [command] Delete a custom message or command" },
         { "printstat",  ".printstat       Print Players online statistics"},
         { "getmsg",     ".getmsg [line]   Get message list"},
+        { "exec",       ".exec  [command] Execute command on server"}
     };
 
     // Dictionary<player, Dictionary<command, option>>
@@ -170,6 +171,10 @@ class CustomCommandManager
                 PlayerMessage msg = MCSV.MessageList[MCSV.MessageList.Count - l - 1];
                 MCSV.ServerPrivateRawMessage($"[!] [{msg.Time.ToShortTimeString()}] <{msg.Sender}>: {msg.Content}", sender);
             }
+        }
+        else if (flag == "exec")
+        {
+            MCSV.SendCommand(option);
         }
         // parse command
         else
