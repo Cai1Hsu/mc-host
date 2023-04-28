@@ -5,7 +5,7 @@ using System.Text.Json;
 
 class CustomCommandManager
 {
-    private MinecraftHandler MCSV;
+    private MinecraftHandler MinecraftServer;
 
     // Dictionary<command, description>;
     public Dictionary<string, string> BuiltInCommands = new Dictionary<string, string>()
@@ -24,7 +24,7 @@ class CustomCommandManager
 
     public CustomCommandManager(MinecraftHandler minecraftHandler)
     {
-        MCSV = minecraftHandler;
+        MinecraftServer = minecraftHandler;
 
         LoadCommands();
 
@@ -52,16 +52,16 @@ class CustomCommandManager
 
     public void ExecuteCommand(string command, string sender, bool isPublicCommand)
     {
-        string flag = command[0..command.IndexOf(' ')].ToLower();
+        string globalCommond = command[0..command.IndexOf(' ')].ToLower();
         
-        string option = command[command.IndexOf(' ')..];
+        string subCommond = command[command.IndexOf(' ')..];
 
-        if (flag == "set" || flag == "alias")
+        if (globalCommond == "set" || globalCommond == "alias")
         {
-            string[] options = option.Split(' ');
+            string[] options = subCommond.Split(' ');
             if (options.Length < 2)
             {
-                MCSV.ServerPrivateRawMessage("[!] Please specify the command", sender);
+                MinecraftServer.ServerTargetRawMessage("[!] Please specify the command", sender);
                 return;
             }
 
@@ -70,14 +70,21 @@ class CustomCommandManager
             
             if (BuiltInCommands.ContainsKey(key))
             {
-                MCSV.ServerPrivateRawMessage("[!] Can NOT redefine built-in commands", sender);
-                MCSV.ServerPrivateRawMessage("[!] Use \".set\" to set your private commands", sender);
+                MinecraftServer.ServerTargetRawMessage("[!] Can NOT define built-in commands", sender);
+                MinecraftServer.ServerTargetRawMessage("[!] Use \".set\" to set your private commands", sender);
             }
             else
             {
                 if (PrivateCommands.ContainsKey(sender))
                 {
-                    PrivateCommands[sender].Add(key, val);
+                    if (PrivateCommands[sender].ContainsKey(key))
+                    {
+                        PrivateCommands[sender][key] = val;
+                    }
+                    else
+                    {
+                        PrivateCommands[sender].Add(key, val);
+                    }
                 }
                 else
                 {
@@ -88,68 +95,61 @@ class CustomCommandManager
 
             SaveCommands();
         }
-        else if (flag == "del")
+        else if (globalCommond == "del")
         {
-            string[] options = option.Split(' ');
+            string[] options = subCommond.Split(' ');
             if (options.Length == 0)
             {
-                MCSV.ServerPrivateRawMessage("[!] Please specify the command", sender);
+                MinecraftServer.ServerTargetRawMessage("[!] Please specify the command", sender);
                 return;
             }
 
             string key = options[0];
 
-            if (PrivateCommands.ContainsKey(sender))
+            if (PrivateCommands.ContainsKey(sender) && PrivateCommands[sender].ContainsKey(key))
             {
-                if (PrivateCommands[sender].ContainsKey(key))
-                {
-                    PrivateCommands[sender].Remove(key);
-                }
-                else
-                {
-                    MCSV.ServerPrivateRawMessage("[!] Can NOT find the command", sender);
-                }
+                PrivateCommands[sender].Remove(key);
             }
             else
             {
-                MCSV.ServerPrivateRawMessage("[!] Can NOT find the command", sender);
+                MinecraftServer.ServerTargetRawMessage("[!] Can NOT find the command", sender);
             }
         }
-        else if (flag == "help")
+        else if (globalCommond == "help")
         {
-            MCSV.ServerPrivateRawMessage("Built-in commands:", sender);
+            MinecraftServer.ServerTargetRawMessage("Built-in commands:", sender);
             
             foreach (var public_command in BuiltInCommands.Keys)
             {
                 string description = BuiltInCommands[public_command];
-                MCSV.ServerPrivateRawMessage($"  {description}", sender);
+                MinecraftServer.ServerTargetRawMessage($"  {description}", sender);
             }
             
             if (PrivateCommands.ContainsKey(sender))
             {
-                MCSV.ServerPrivateRawMessage("Your private commands:", sender);
+                MinecraftServer.ServerTargetRawMessage("Your private commands:", sender);
 
                 foreach (var private_command in PrivateCommands[sender].Keys)
                 {
-                    MCSV.ServerPrivateRawMessage($"  .{private_command}", sender);
+                    MinecraftServer.ServerTargetRawMessage($"  .{private_command}", sender);
                 }
             }
             else
             {
-                MCSV.ServerPrivateRawMessage("You have no private commands", sender);
+                MinecraftServer.ServerTargetRawMessage("[!] You have no private commands", sender);
             }
         }
-        else if (flag == "printstat")
+        else if (globalCommond == "printstat")
         {
-            MCSV.PrivatePrintOnlineStatistics(sender);
+            MinecraftServer.PrivatePrintOnlineStatistics(sender);
         }
-        else if (flag == "getmsg")
+        else if (globalCommond == "getmsg")
         {
-            string[] options = option.Split(' ');
+            string[] options = subCommond.Split(' ');
             if (options.Length == 0)
             {
-                PlayerMessage msg = MCSV.MessageList[MCSV.MessageList.Count - 1];
-                MCSV.ServerPrivateRawMessage($"[!] [{msg.Time.ToShortTimeString()}] <{msg.Sender}>: {msg.Content}", sender);
+                PlayerMessage msg = MinecraftServer.MessageList[MinecraftServer.MessageList.Count - 1];
+                MinecraftServer.ServerTargetRawMessage($"[!] [{msg.Time.ToShortTimeString()}] <{msg.Sender}>: {msg.Content}", sender);
                 return;
             }
 
@@ -157,58 +157,59 @@ class CustomCommandManager
 
             if (!int.TryParse(line, out int l))
             {
-                MCSV.ServerPrivateRawMessage($"[!] \"{line}\" is a invalid line number", sender);
+                MinecraftServer.ServerTargetRawMessage($"[!] \"{line}\" is a invalid line number", sender);
                 return;
             }
             else
             {
-                if (l > MCSV.MessageList.Count || l < 1)
+                if (l > MinecraftServer.MessageList.Count || l < 1)
                 {
-                    MCSV.ServerPrivateRawMessage($"[!] \"{line}\" is a invalid line number", sender);
+                    MinecraftServer.ServerTargetRawMessage($"[!] \"{line}\" is a invalid line number", sender);
                     return;
                 }
 
-                PlayerMessage msg = MCSV.MessageList[MCSV.MessageList.Count - l - 1];
-                MCSV.ServerPrivateRawMessage($"[!] [{msg.Time.ToShortTimeString()}] <{msg.Sender}>: {msg.Content}", sender);
+                PlayerMessage msg = MinecraftServer.MessageList[MinecraftServer.MessageList.Count - l - 1];
+                MinecraftServer.ServerTargetRawMessage($"[!] [{msg.Time.ToShortTimeString()}] <{msg.Sender}>: {msg.Content}", sender);
             }
         }
-        else if (flag == "exec")
+        else if (globalCommond == "exec")
         {
-            MCSV.SendCommand(option);
+            MinecraftServer.SendCommand(subCommond);
         }
+        // TODO
         // parse command
         else
         {
-            if (BuiltInCommands.ContainsKey(flag))
+            if (BuiltInCommands.ContainsKey(globalCommond))
             {
-                MCSV.ServerPrivateRawMessage($"[!] {BuiltInCommands[flag]}", sender);
+                MinecraftServer.ServerTargetRawMessage($"[!] {BuiltInCommands[globalCommond]}", sender);
             }
             else
             {
                 if (PrivateCommands.ContainsKey(sender))
                 {
-                    if (PrivateCommands[sender].ContainsKey(flag))
+                    if (PrivateCommands[sender].ContainsKey(globalCommond))
                     {
-                        if (PrivateCommands[sender][flag].StartsWith("/"))
+                        if (PrivateCommands[sender][globalCommond].StartsWith("/"))
                         {
-                            MCSV.SendCommand(PrivateCommands[sender][flag]);
+                            MinecraftServer.SendCommand(PrivateCommands[sender][globalCommond]);
                         }
                         else
                         {
                             if (isPublicCommand)
-                                MCSV.ServerPublicRawMessage($"{flag}: {PrivateCommands[sender][flag]}");
+                                MinecraftServer.ServerPublicRawMessage($"{globalCommond}: {PrivateCommands[sender][globalCommond]}");
                             else
-                                MCSV.ServerPrivateRawMessage($"{flag}: {PrivateCommands[sender][flag]}", sender);
+                                MinecraftServer.ServerTargetRawMessage($"{globalCommond}: {PrivateCommands[sender][globalCommond]}", sender);
                         }
                     }
                     else
                     {
-                        MCSV.ServerPrivateRawMessage($"[!] Unknown command: {flag}", sender);
+                        MinecraftServer.ServerTargetRawMessage($"[!] Unknown command: {globalCommond}", sender);
                     }
                 }
                 else
                 {
-                    MCSV.ServerPrivateRawMessage($"[!] Unknown command: {flag}", sender);
+                    MinecraftServer.ServerTargetRawMessage($"[!] Unknown command: {globalCommond}", sender);
                 }
             }
         }

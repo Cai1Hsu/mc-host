@@ -162,14 +162,9 @@ class MinecraftHandler
         SendCommand($"/say {message}");
     }
 
-    public void ServerPrivateRawMessage(string message, string player)
+    public void ServerTargetRawMessage(string message, string player)
     {
          SendCommand($"/tellraw {player} {{\"text\":\"{message}\"}}");
-    }
-
-    public void ServerAnnounceMessage(string message)
-    {
-        SendCommand($"/title @a title {message}");
     }
 
     public void ServerPublicRawMessage(string message)
@@ -319,15 +314,15 @@ class MinecraftHandler
 
     public void PrivatePrintOnlineStatistics(string caller)
     {
-        ServerPrivateRawMessage("------------------------- " + DateTime.Now.ToShortTimeString(), caller);
-        ServerPrivateRawMessage("Online Time Statistics:", caller);
+        ServerTargetRawMessage("------------------------- " + DateTime.Now.ToShortTimeString(), caller);
+        ServerTargetRawMessage("Online Time Statistics:", caller);
 
         foreach (string player in PlayerPlayTime.Keys)
         {
-            ServerPrivateRawMessage($"{player}: {(int)Math.Ceiling(GetPlayerPlayTime(player).TotalMinutes)} minutes", caller);
+            ServerTargetRawMessage($"{player}: {(int)Math.Ceiling(GetPlayerPlayTime(player).TotalMinutes)} minutes", caller);
         }
 
-        ServerPrivateRawMessage("-------------------------", caller);
+        ServerTargetRawMessage("-------------------------", caller);
     }
 
     private void HostLogCycle()
