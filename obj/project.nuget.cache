@@ -1,8 +1,16 @@
 {
   "version": 2,
-  "dgSpecHash": "Cbb2AiGsceGfuSM+9INeHZWeWQP4wBbKt6as4Su0WidywPy76GtNO6LYzcadiMkAG2l0b4dnxAMfOdTrWVw5YA==",
+  "dgSpecHash": "t5A8Q15swoJD1xHKMZlv6OyPCQH7wIXhJUO3DbJfhlNH8Bp+la4QI3VeD/44EMghcByrUdmyxYRoDIie6o8+QQ==",
   "success": true,
   "projectFilePath": "/workspaces/mc-host/mc-host.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "/home/codespace/.nuget/packages/microsoft.aspnetcore.openapi/7.0.5/microsoft.aspnetcore.openapi.7.0.5.nupkg.sha512",
+    "/home/codespace/.nuget/packages/microsoft.extensions.apidescription.server/6.0.5/microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
+    "/home/codespace/.nuget/packages/microsoft.openapi/1.4.3/microsoft.openapi.1.4.3.nupkg.sha512",
+    "/home/codespace/.nuget/packages/swashbuckle.aspnetcore/6.4.0/swashbuckle.aspnetcore.6.4.0.nupkg.sha512",
+    "/home/codespace/.nuget/packages/swashbuckle.aspnetcore.swagger/6.4.0/swashbuckle.aspnetcore.swagger.6.4.0.nupkg.sha512",
+    "/home/codespace/.nuget/packages/swashbuckle.aspnetcore.swaggergen/6.4.0/swashbuckle.aspnetcore.swaggergen.6.4.0.nupkg.sha512",
+    "/home/codespace/.nuget/packages/swashbuckle.aspnetcore.swaggerui/6.4.0/swashbuckle.aspnetcore.swaggerui.6.4.0.nupkg.sha512"
+  ],
   "logs": []
 }

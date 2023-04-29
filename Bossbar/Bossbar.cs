@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using System;
+using System.Text.Json;
 using mchost.Server;
 
 namespace mchost.Bossbar
@@ -12,6 +11,12 @@ namespace mchost.Bossbar
 
         public void UpdateAll()
         {
+            if (!LoadBossbars())
+            {
+                Logging.Logger.Log("Failed to load bossbars.json");
+                host?.TellRaw("@a", "[Server] Failed to load bossbars.json");
+            }
+            
             foreach (Bossbar bossbar in Bossbars.Values)
             {
                 host?.SendCommand($"/bossbar set {bossbar.guid} name \"{bossbar.Name}\"");
@@ -40,14 +45,58 @@ namespace mchost.Bossbar
             return guid;
         }
 
+        public void RemoveBossbar(string id)
+        {
+            Bossbars.Remove(new Guid(id));
+
+            host?.SendCommand($"/bossbar remove {id}");
+        }
+
         public void RemoveBossbar(Guid guid)
         {
             Bossbars.Remove(guid);
 
-            host?.SendCommand($"/bossbar remove {guid}");
+            RemoveBossbar(guid.ToString());
         }
 
         public Bossbar GetBossbar(Guid guid) => Bossbars[guid];
+
+        public void SaveBossbarsAsync()
+        {
+            using (FileStream fs = File.Create("bossbars.json"))
+            {
+                JsonSerializer.SerializeAsync(fs, Bossbars);
+            }
+        }
+
+        public bool LoadBossbars()
+        {
+            if (!File.Exists("bossbars.json"))
+            {
+                File.Create("bossbars.json");
+                return false;
+            }
+            
+            try
+            {
+                using (FileStream fs = File.OpenRead("bossbars.json"))
+                {
+                    Bossbars = JsonSerializer.DeserializeAsync<Dictionary<Guid, Bossbar>>(fs).Result ?? new();
+                }
+            }
+            catch (Exception)
+            {
+                Logging.Logger.Log($"Failed to load bossbars. File may not exist or is empty");
+                return false;
+            }
+
+            return true;
+        }
+
+        public BossbarManager()
+        {
+            this.host = ServerHost.GetServerHost();
+        }
     }
 
     public class Bossbar
@@ -120,6 +169,8 @@ namespace mchost.Bossbar
         {
             this.guid = guid;
             this.Name = name;
+
+            ServerHost.GetServerHost()?.bossbarManager?.Bossbars.Add(guid, this);
         }
     }
 

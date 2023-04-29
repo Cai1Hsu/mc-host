@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
 using mchost.Server;
 
 namespace mchost.Overlays
@@ -23,7 +19,14 @@ namespace mchost.Overlays
 
         public void Update()
         {
-            // TODO update scores first
+            var PlayersPlayTime = host?.PlayersPlayTime;
+
+            if (PlayersPlayTime == null) return;
+            
+            foreach (var player in PlayersPlayTime)
+            {
+                OnlineBoard.SetScore(player.Key, (int)player.Value.TotalMinutes);
+            }
 
             foreach (var score in OnlineBoard.scores)
             {
@@ -36,21 +39,13 @@ namespace mchost.Overlays
             host?.SendCommand($"/scoreboard objectives setdisplay sidebar");
         }
 
-        public OnlineBoardManager(ServerHost host)
+        public OnlineBoardManager()
         {
-            this.host = host;
+            this.host = ServerHost.GetServerHost();
             OnlineBoard = new(SCOREBOARD_TITLE);
         }
 
-        public void SaveScores()
-        {
-            // Sync with OnlineStats.json
-        }
-
-        public void LoadScores()
-        {
-            // TODO
-        }
+        public void LoadScores() => Update();
     }
 
     public class ScoreBoard

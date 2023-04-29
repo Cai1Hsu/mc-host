@@ -1,6 +1,6 @@
-using System;
+namespace mchost.Utils;
 
-struct PlayerMessage
+public struct PlayerMessage
 {
     public string Content { get; set; }
     public string Sender { get; set; }
