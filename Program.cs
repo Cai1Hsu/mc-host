@@ -2,6 +2,18 @@
 using System.IO;
 using System.Diagnostics;
 
+namespace mchost
+{
+    public static class Program
+    {
+        public static void Main(string[] args)
+        {
+
+        }
+    }
+    
+}
+
 #if DEBUG
 Console.WriteLine("Running under *Debug* mode");
 
@@ -99,7 +111,7 @@ foreach (string arg in args)
     if (arg.EndsWith(".jar")) jar = arg;
 }
 
-MinecraftHandler minecraftServer = new MinecraftHandler(jrePath, jvmArgs, AutoRestart);
+ServerProcess minecraftServer = new ServerProcess(jrePath, jvmArgs, AutoRestart);
 HttpServer httpServer = new HttpServer(port, minecraftServer, title);
 
 Console.WriteLine("Starting Minecraft Server with following arguments: " + jrePath + " " + jvmArgs);

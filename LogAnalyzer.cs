@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 class LogAnalyzer
 {
-    private MinecraftHandler localMinecraftHandler;
+    private ServerProcess localMinecraftHandler;
 
     public Queue<string> LogAnalysisQueue = new Queue<string>();
 
-    public LogAnalyzer(MinecraftHandler minecraftHandler)
+    public LogAnalyzer(ServerProcess minecraftHandler)
     {
         localMinecraftHandler = minecraftHandler;
     }

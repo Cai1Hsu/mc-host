@@ -11,11 +11,11 @@ class HttpServer
     };
     private HttpListener listener;
 
-    private MinecraftHandler MinecraftServer { get; set; }
+    private ServerProcess MinecraftServer { get; set; }
 
     public string Title { get; set; }
 
-    public HttpServer(string port, MinecraftHandler minecraftServer, string title)
+    public HttpServer(string port, ServerProcess minecraftServer, string title)
     {
         port = port == null ? "8080" : port;
         this.MinecraftServer = minecraftServer;
