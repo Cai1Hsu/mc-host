@@ -34,6 +34,13 @@ public class ServerController : ControllerBase
         return true;
     }
 
+    [HttpPost("TerminateServer")]
+    public bool TerminateServer()
+    {
+        host?.serverProcess.Terminate();
+        return true;
+    }
+
     [HttpPost("SendCommand")]
     public bool SendCommand(string command)
     {
@@ -89,14 +96,42 @@ public class ServerController : ControllerBase
     }
 
     [HttpGet("GetServerStatus")]
-    public bool GetServerStatus()
+    public string GetServerStatus()
     {
-        return host?.IsDone ?? false;
+        if (host == null) return "Host offline";
+
+        if (host.serverProcess == null) return "Process offline";
+
+        if (!host.HasRunningInstence) return "Process offline";
+
+        if (host.IsDone) return "Running";
+
+        if (host.HasIntilizedInstence) return "Prepairing to run";
+
+        return "Intilizing";
     }
 
     [HttpGet("GetMessageList")]
     public List<PlayerMessage> GetMessageList()
     {
         return host?.MessageList ?? new List<PlayerMessage>();
+    }
+
+    [HttpGet("GetRunningManagers")]
+    public List<string> GetRunningManagers()
+    {
+        var res = new List<string>();
+
+        if (host == null) return res;
+
+        if (host?.bossbarManager != null) res.Add("BossbarManager");
+
+        if (host?.onlineBoardManager!= null) res.Add("OnlineBoardManager");
+
+        if (host?.customCommandManager != null) res.Add("CustomCommandManager");
+
+        if (host?.serverProcess != null) res.Add("ServerProcessManager");
+    
+        return res;
     }
 }

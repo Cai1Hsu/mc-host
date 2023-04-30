@@ -1,5 +1,4 @@
 using mchost.Server;
-using mchost.Bossbar;
 using Microsoft.AspNetCore.Mvc;
 
 namespace mchost.Controllers;
@@ -23,7 +22,8 @@ public class BossbarController : ControllerBase
     {
         if (name == null) return false;
 
-        Bossbar.Bossbar bossbar = new Bossbar.Bossbar(new Guid(), name);
+        host?.bossbarManager.AddBossbar(name);
+        host?.bossbarManager.UpdateAll();
 
         return true;
     }

@@ -1,77 +1,123 @@
+using System.Buffers;
+using System.Text;
 using System.Text.Json;
 
 namespace mchost.Utils;
 
 public class RawJson
 {
-    Utf8JsonWriter writer = null!;
+    private Utf8JsonWriter writer;
 
-    Stream textStream = null!;
+    private MemoryStream ms;
 
-    public void applyCommonConfiguration()
-    {
-        textStream = new MemoryStream();
-        writer = new Utf8JsonWriter(textStream);
-    }
+    private bool IsFlushed = false;
 
     public RawJson()
     {
-        applyCommonConfiguration();
+        ms = new();
+        writer = new(ms);
     }
 
     public RawJson(string text)
     {
-        applyCommonConfiguration();
+        ms = new();
+        writer = new(ms);
 
+        writer.WriteStartObject();
         WriteText(text);
+        writer.WriteEndObject();
+        IsFlushed = true;
     }
 
     public RawJson(string text, string color)
     {
-        applyCommonConfiguration();
+        ms = new();
+        writer = new(ms);
 
-        WriteText(text);
-        WriteColor(color);
+        writer.WriteStartObject();
+        WriteText(text, color);
+        writer.WriteEndObject();
+        IsFlushed = true;
+    }
+
+    public RawJson WriteText(string text, string color)
+    {
+        if (IsFlushed) throw new InvalidOperationException("RawJson is already flushed");
+
+        writer.WriteString("text", text);
+        writer.WriteString("color", color);
+        return this;
     }
 
     public RawJson WriteText(string text)
     {
+        if (IsFlushed) throw new InvalidOperationException("RawJson is already flushed");
+
         writer.WriteString("text", text);
         return this;
     }
+
     public RawJson WriteColor(string color)
     {
+        if (IsFlushed) throw new InvalidOperationException("RawJson is already flushed");
+
         writer.WriteString("color", color);
         return this;
     }
 
     public RawJson WriteProperty(string key, string val)
     {
+        if (IsFlushed) throw new InvalidOperationException("RawJson is already flushed");
+
         writer.WriteString(key, val);
         return this;
     }
 
     public RawJson WriteProperty(string key, int val)
     {
+        if (IsFlushed) throw new InvalidOperationException("RawJson is already flushed");
+
         writer.WriteNumber(key, val);
         return this;
     }
 
     public RawJson WriteStartObject()
     {
+        if (IsFlushed) throw new InvalidOperationException("RawJson is already flushed");
+
         writer.WriteStartObject();
         return this;
     }
 
     public RawJson WriteEndObject()
     {
+        if (IsFlushed) throw new InvalidOperationException("RawJson is already flushed");
+
         writer.WriteEndObject();
+        return this;
+    }
+
+    public RawJson WriteStartArray()
+    {
+        if (IsFlushed) throw new InvalidOperationException("RawJson is already flushed");
+
+        writer.WriteStartArray();
+        return this;
+    }
+
+    public RawJson WriteEndArray()
+    {
+        if (IsFlushed) throw new InvalidOperationException("RawJson is already flushed");
+
+        writer.WriteEndArray();
         return this;
     }
 
     public override string ToString()
     {
+        IsFlushed = true;
         writer.Flush();
-        return textStream.ToString() ?? string.Empty;
+        return Encoding.UTF8.GetString(ms.ToArray());
     }
+
 }

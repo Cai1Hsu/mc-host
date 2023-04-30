@@ -1,6 +1,8 @@
 using mchost.Server;
 using mchost.Logging;
 
+const bool TECHNICAL_PREVIEW = true;
+
 Logger.Log("Welcome to mchost!");
 
 var host = new ServerHost();
@@ -19,7 +21,7 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (TECHNICAL_PREVIEW || app.Environment.IsDevelopment())
 {
     Logger.Log("Running in development mode");
     app.UseSwagger();

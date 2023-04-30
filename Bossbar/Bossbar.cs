@@ -81,6 +81,8 @@ namespace mchost.Bossbar
 
             host?.SendCommand($"/bossbar add {guid} {name}");
 
+            Show(guid);
+
             return guid;
         }
 
@@ -147,6 +149,7 @@ namespace mchost.Bossbar
             get { return Name; }
             set
             {
+                if (value == Name) return;
                 Name = value;
                 bossbarManager?.Update(guid, BossbarProperty.Name, Name);
             }
@@ -157,6 +160,7 @@ namespace mchost.Bossbar
             get { return Color; }
             set
             {
+                if (value == Color) return;
                 Color = value;
                 bossbarManager?.Update(guid, BossbarProperty.Color, Color.ToString().ToLower());
             }
@@ -167,6 +171,7 @@ namespace mchost.Bossbar
             get { return Max; }
             set
             {
+                if (value == Max) return;
                 Max = value;
                 bossbarManager?.Update(guid, BossbarProperty.Max, Max.ToString());
             }
@@ -177,6 +182,7 @@ namespace mchost.Bossbar
             get { return Value; }
             set
             {
+                if (value == Value) return;
                 Value = value;
                 bossbarManager?.Update(guid, BossbarProperty.Value, Value.ToString());
             }
@@ -187,6 +193,7 @@ namespace mchost.Bossbar
             get { return Style; }
             set
             {
+                if (value == Style) return;
                 Style = value;
                 bossbarManager?.Update(guid, BossbarProperty.Style, Style.ToString().ToLower());
             }
@@ -197,6 +204,7 @@ namespace mchost.Bossbar
             get { return Visible; }
             set
             {
+                if (value == Visible) return;
                 Visible = value;
                 bossbarManager?.Update(guid, BossbarProperty.Visible, Visible.ToString().ToLower());
             }
@@ -208,8 +216,6 @@ namespace mchost.Bossbar
         {
             this.guid = guid;
             this.Name = name;
-
-            ServerHost.GetServerHost()?.bossbarManager?.Bossbars.Add(guid, this);
         }
     }
 

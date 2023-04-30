@@ -44,11 +44,11 @@ namespace mchost.Server
 
         public List<PlayerMessage> MessageList = new List<PlayerMessage>();
 
-        public OnlineBoardManager onlineBoardManager;
+        public OnlineBoardManager onlineBoardManager = null!;
 
-        public BossbarManager bossbarManager;
+        public BossbarManager bossbarManager = null!;
 
-        public CustomCommandManager customCommandManager;
+        public CustomCommandManager customCommandManager = null!;
 
         public LogHandler logHandler = new LogHandler();
 
@@ -85,12 +85,12 @@ namespace mchost.Server
         public ServerHost()
         {
             serverProcess = new ServerProcessManager();
-            customCommandManager = new CustomCommandManager();
-            bossbarManager = new BossbarManager();
-            onlineBoardManager = new OnlineBoardManager();
+            // customCommandManager = new CustomCommandManager();
+            // bossbarManager = new BossbarManager();
+            // onlineBoardManager = new OnlineBoardManager();
 
-            bossbarManager.LoadBossbars();
-            onlineBoardManager.LoadScores();
+            // bossbarManager.LoadBossbars();
+            // onlineBoardManager.LoadScores();
             LoadMessageList();
             LoadTimeStatistics();
 
@@ -113,7 +113,7 @@ namespace mchost.Server
 
                     if (IsDone && LoopCount % 1200 == 0) SendCommand("save-all");
 
-                    if (IsDone && LoopCount % 60 == 0) onlineBoardManager.Update();
+                    if (IsDone && LoopCount % 60 == 0) onlineBoardManager?.Update();
                 }
             });
 
@@ -144,7 +144,7 @@ namespace mchost.Server
 
         public void SendCommand(string command) => serverProcess.SendCommand(command);
 
-        public void TellRaw(string player, RawJson json) => SendCommand($"/tellraw {player} {json}");
+        public void TellRaw(string player, RawJson json) => SendCommand($"/tellraw {player} {json.ToString()}");
 
         public void TellRaw(string player, string msg) => SendCommand($"/tellraw {player} {{\"text\":\"{msg}\"}}");
 
@@ -321,10 +321,19 @@ namespace mchost.Server
 
         public void GreetPlayer(string player)
         {
-            RawJson greet = new RawJson($"Hello {player}, welcome to ").WriteStartObject()
+            RawJson greet = new RawJson()
+                .WriteStartArray()
+                .WriteStartObject()
+                .WriteText($"Hello {player}, welcome to ")
+                .WriteEndObject()
+                .WriteStartObject()
                 .WriteText("Tanghu Esports Minecraft Server")
                 .WriteColor("green")
-                .WriteEndObject();
+                .WriteEndObject()
+                .WriteStartObject()
+                .WriteText("!")
+                .WriteEndObject()
+                .WriteEndArray();
 
             TellRaw(player, greet);
             TellRaw(player, new RawJson("This is a technical preview of mchost(github.com/cai1hsu/mc-host), if you find any bugs, please report to the server owner.", "yellow"));
@@ -335,6 +344,13 @@ namespace mchost.Server
         {
             serverProcess.SetDone();
 
+            serverProcess = new ServerProcessManager();
+            customCommandManager = new CustomCommandManager();
+            bossbarManager = new BossbarManager();
+            onlineBoardManager = new OnlineBoardManager();
+
+            bossbarManager.LoadBossbars();
+            onlineBoardManager.LoadScores();
             bossbarManager.ShowAll();
             onlineBoardManager.Show();
         }
