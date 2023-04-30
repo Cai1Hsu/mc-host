@@ -1,3 +1,4 @@
+using mchost.Server;
 using mchost.Logging;
 
 const bool TECHNICAL_PREVIEW = true;
