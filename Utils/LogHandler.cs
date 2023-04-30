@@ -117,7 +117,7 @@ public class LogHandler
 
             Logging.Logger.Log($"Player {playerName} left the game");
         }
-        else if (!host?.IsDone ?? false && logContent.Contains("You need to agree to the EULA"))
+        else if (!(host?.IsDone ?? false) && logContent.Contains("You need to agree to the EULA"))
         {
             Logging.Logger.Log("You need to agree to the EULA in order to run the server.");
         }
