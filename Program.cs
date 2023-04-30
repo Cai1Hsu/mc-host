@@ -4,6 +4,10 @@ const bool TECHNICAL_PREVIEW = true;
 
 Logger.Log("Welcome to mchost!");
 
+var host = new ServerHost();
+
+ServerHost.SetServerHost(host);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
