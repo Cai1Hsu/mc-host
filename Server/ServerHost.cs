@@ -120,7 +120,7 @@ namespace mchost.Server
             HostThread.Start();
         }
 
-        public void UpdateLeftPlayerPlayTime(string player)
+        public void UpdateStoredPlayTime(string player)
         {
             if (!PlayersPlayTime.ContainsKey(player))
                 PlayersPlayTime.Add(player, TimeSpan.Zero);
@@ -331,7 +331,13 @@ namespace mchost.Server
             TellRaw(player, new RawJson("Our server supports custom command, type .help for more info.", "yellow"));
         }
 
-        public void SetDone() => serverProcess.SetDone();
+        public void SetDone()
+        {
+            serverProcess.SetDone();
+
+            bossbarManager.ShowAll();
+            onlineBoardManager.Show();
+        }
 
         public static void SetServerHost(ServerHost host)
         {

@@ -9,6 +9,45 @@ namespace mchost.Bossbar
 
         public Dictionary<Guid, Bossbar> Bossbars = new();
 
+        public void ShowAll()
+        {
+            foreach (Bossbar bossbar in Bossbars.Values)
+            {
+                host?.SendCommand($"/bossbar set {bossbar.guid} visible true");
+                host?.SendCommand($"/bossbar set {bossbar.guid} players @a");
+            }
+        }
+
+        public void Show(string id)
+        {
+            host?.SendCommand($"/bossbar set {id} visible true");
+            host?.SendCommand($"/bossbar set {id} players @a");
+        }
+
+        public void Show(Guid guid)
+        {
+            host?.SendCommand($"/bossbar set {guid} visible true");
+            host?.SendCommand($"/bossbar set {guid} players @a");
+        }
+
+        public void HideAll()
+        {
+            foreach (Bossbar bossbar in Bossbars.Values)
+            {
+                host?.SendCommand($"/bossbar set {bossbar.guid} visible false");
+            }
+        }
+
+        public void Hide(string id)
+        {
+            host?.SendCommand($"/bossbar set {id} visible false");
+        }
+
+        public void Hide(Guid guid)
+        {
+            host?.SendCommand($"/bossbar set {guid} visible false");
+        }
+
         public void UpdateAll()
         {
             if (!LoadBossbars())

@@ -204,6 +204,84 @@ public class CustomCommandManager
                     Logger.Log($"Command \'{input}\' executed by {player}");
                 };
             }
+
+            // .showallbars
+            BuiltInCommands.Add("showallbars", new MyCommand("showallbars", ".showallbars  Show all bossbars", (player, _) =>
+            {
+                var bossbarManager = host?.bossbarManager;
+
+                if (bossbarManager == null)
+                {
+                    host?.TellRaw(player, new RawJson("[!] bossbarManager not found", "red"));
+                    return;
+                }
+
+                bossbarManager.ShowAll();
+
+                host?.TellRaw(player, new RawJson("[+] Bossbars shown", "yellow"));
+            }));
+
+            // .showbar
+            // show a specific bossbar
+            BuiltInCommands.Add("showbar", new MyCommand("showbar", ".showbar [bar]  Show a specific bossbar", (player, input) =>
+            {
+                var bossbarManager = host?.bossbarManager;
+
+                if (bossbarManager == null)
+                {
+                    host?.TellRaw(player, new RawJson("[!] bossbarManager not found", "red"));
+                    return;
+                }
+
+                if (input.Length == 0)
+                {
+                    host?.TellRaw(player, new RawJson("[!] Please specify the bossbar", "red"));
+                    return;
+                }
+
+                string bar = input.Trim(' ').Trim('\"');
+
+                if (!bossbarManager.Bossbars.ContainsKey(new Guid(bar)))
+                {
+                    host?.TellRaw(player, new RawJson("[!] Bossbar not found", "red"));
+                    return;
+                }
+
+                bossbarManager.Show(bar);
+
+                host?.TellRaw(player, new RawJson($"[+] Bossbar §a{bar}§r shown", "yellow"));
+            }));
+
+            // .hidebar
+            // hide a specific bossbar
+            BuiltInCommands.Add("hidebar", new MyCommand("hidebar", ".hidebar [bar]  Hide a specific bossbar", (player, input) =>
+            {
+                var bossbarManager = host?.bossbarManager;
+
+                if (bossbarManager == null)
+                {
+                    host?.TellRaw(player, new RawJson("[!] bossbarManager not found", "red"));
+                    return;
+                }
+
+                if (input.Length == 0)
+                {
+                    host?.TellRaw(player, new RawJson("[!] Please specify the bossbar", "red"));
+                    return;
+                }
+
+                string bar = input.Trim(' ').Trim('\"');
+
+                if (!bossbarManager.Bossbars.ContainsKey(new Guid(bar)))
+                {
+                    host?.TellRaw(player, new RawJson("[!] Bossbar not found", "red"));
+                    return;
+                }
+
+                bossbarManager.Hide(bar);
+
+                host?.TellRaw(player, new RawJson($"[+] Bossbar §a{bar}§r hidden", "yellow"));
+            }));
         }
     }
 

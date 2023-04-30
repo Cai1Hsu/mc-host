@@ -98,6 +98,10 @@ public class LogHandler
         {
             string playerName = logContent[0..logContent.IndexOf(" ")];
             host?.OnlinePlayers.Add(playerName, DateTime.Now);
+
+            // This is needed in case a new player joined the game
+            host?.UpdateStoredPlayTime(playerName);
+            host?.onlineBoardManager.Update();
             
             host?.GreetPlayer(playerName);
             Logging.Logger.Log($"Player {playerName} joined the game");
@@ -107,7 +111,9 @@ public class LogHandler
         {
             string playerName = logContent[0..logContent.IndexOf(" ")];
             host?.OnlinePlayers.Remove(playerName);
-            host?.UpdateLeftPlayerPlayTime(playerName);
+
+            host?.UpdateStoredPlayTime(playerName);
+            host?.onlineBoardManager.Update();
 
             Logging.Logger.Log($"Player {playerName} left the game");
         }
