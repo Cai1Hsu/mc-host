@@ -36,8 +36,7 @@ public class CustomCommandManager
 
         if (BuiltInCommands.ContainsKey(cmd_name))
         {
-            Logging.Logger.Log($"Built-in command: {cmd_name}");
-            new Task(() => BuiltInCommands[cmd_name]?.Action(player, trimed)).Start();
+            BuiltInCommands[cmd_name]?.Action(player, trimed);
 
             host?.TellRaw(player, new RawJson($"[CustomCommand] Executed built-in command: {trimed}", "yellow"));
             return;
@@ -122,8 +121,6 @@ public class CustomCommandManager
 
                 string var = inputs[0];
                 string msg = input.Substring(var.Length).Trim(new char[] { ' ', '\"' });
-
-                Logging.Logger.Log($"set: \'{var}\',\'{msg}\'");
 
                 if (BuiltInCommands.ContainsKey(var))
                 {
