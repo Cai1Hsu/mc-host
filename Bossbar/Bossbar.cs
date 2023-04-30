@@ -1,5 +1,6 @@
 using System.Text.Json;
 using mchost.Server;
+using mchost.Utils;
 
 namespace mchost.Bossbar
 {
@@ -52,13 +53,14 @@ namespace mchost.Bossbar
         {
             if (!LoadBossbars())
             {
-                Logging.Logger.Log("Failed to load bossbars.json");
-                host?.TellRaw("@a", "[Server] Failed to load bossbars.json");
+                Logging.Logger.Log("Failed to load Bossbars.json");
+                host?.TellRaw("@a", "[Server] Failed to load Bossbars.json");
             }
 
             foreach (Bossbar bossbar in Bossbars.Values)
             {
-                host?.SendCommand($"/bossbar set {bossbar.guid} name \"{bossbar.Name}\"");
+                RawJson jsonName = new RawJson($"\"{bossbar.Name}\"");
+                host?.SendCommand($"/bossbar set {bossbar.guid} name \"{jsonName}\"");
                 host?.SendCommand($"/bossbar set {bossbar.guid} color {bossbar.Color.ToString().ToLower()}");
                 host?.SendCommand($"/bossbar set {bossbar.guid} max {bossbar.Max}");
                 host?.SendCommand($"/bossbar set {bossbar.guid} value {bossbar.Value}");
@@ -104,7 +106,7 @@ namespace mchost.Bossbar
 
         public void SaveBossbarsAsync()
         {
-            using (FileStream fs = File.Create("bossbars.json"))
+            using (FileStream fs = File.Create("Bossbars.json"))
             {
                 JsonSerializer.SerializeAsync(fs, Bossbars);
             }
@@ -112,15 +114,15 @@ namespace mchost.Bossbar
 
         public bool LoadBossbars()
         {
-            if (!File.Exists("bossbars.json"))
+            if (!File.Exists("Bossbars.json"))
             {
-                File.Create("bossbars.json");
+                File.Create("Bossbars.json");
                 return false;
             }
 
             try
             {
-                using (FileStream fs = File.OpenRead("bossbars.json"))
+                using (FileStream fs = File.OpenRead("Bossbars.json"))
                 {
                     Bossbars = JsonSerializer.DeserializeAsync<Dictionary<Guid, Bossbar>>(fs).Result ?? new();
                 }
@@ -144,71 +146,17 @@ namespace mchost.Bossbar
     {
         public Guid guid { get; set; }
 
-        public string Name
-        {
-            get { return Name; }
-            set
-            {
-                if (value == Name) return;
-                Name = value;
-                bossbarManager?.Update(guid, BossbarProperty.Name, Name);
-            }
-        }
+        public string Name { get; set; }
 
-        public BossbarColor Color
-        {
-            get { return Color; }
-            set
-            {
-                if (value == Color) return;
-                Color = value;
-                bossbarManager?.Update(guid, BossbarProperty.Color, Color.ToString().ToLower());
-            }
-        }
+        public BossbarColor Color { get; set; }
 
-        public int Max
-        {
-            get { return Max; }
-            set
-            {
-                if (value == Max) return;
-                Max = value;
-                bossbarManager?.Update(guid, BossbarProperty.Max, Max.ToString());
-            }
-        }
+        public int Max { get; set; }
 
-        public int Value
-        {
-            get { return Value; }
-            set
-            {
-                if (value == Value) return;
-                Value = value;
-                bossbarManager?.Update(guid, BossbarProperty.Value, Value.ToString());
-            }
-        }
+        public int Value { get; set; }
 
-        public BossbarStyle Style
-        {
-            get { return Style; }
-            set
-            {
-                if (value == Style) return;
-                Style = value;
-                bossbarManager?.Update(guid, BossbarProperty.Style, Style.ToString().ToLower());
-            }
-        }
+        public BossbarStyle Style { get; set; }
 
-        public bool Visible
-        {
-            get { return Visible; }
-            set
-            {
-                if (value == Visible) return;
-                Visible = value;
-                bossbarManager?.Update(guid, BossbarProperty.Visible, Visible.ToString().ToLower());
-            }
-        }
+        public bool Visible { get; set; }
 
         private BossbarManager? bossbarManager { get; set; }
 

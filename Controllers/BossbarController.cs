@@ -20,7 +20,7 @@ public class BossbarController : ControllerBase
     [HttpPost("CreateBossbar")]
     public bool CreateBossbar(string name)
     {
-        if (name == null) return false;
+        if (name == null || host?.bossbarManager == null) return false;
 
         host?.bossbarManager.AddBossbar(name);
         host?.bossbarManager.UpdateAll();
@@ -31,7 +31,7 @@ public class BossbarController : ControllerBase
     [HttpPost("RemoveBossbar")]
     public bool RemoveBossbar(string id)
     {
-        if (host == null || id == null) return false;
+        if (host == null || id == null || host?.bossbarManager == null) return false;
 
         host?.bossbarManager.RemoveBossbar(id);
 
@@ -41,7 +41,7 @@ public class BossbarController : ControllerBase
     [HttpPost("UpdateAllBossbar")]
     public bool UpdateAllBossbar()
     {
-        if (host == null) return false;
+        if (host == null || host?.bossbarManager == null) return false;
 
         host.bossbarManager.UpdateAll();
 
@@ -51,7 +51,7 @@ public class BossbarController : ControllerBase
     [HttpGet("GetBossbars")]
     public Dictionary<string, string> GetBossbars()
     {
-        if (host == null) return new Dictionary<string, string>();
+        if (host == null || host?.bossbarManager == null) return new Dictionary<string, string>();
 
         return host.bossbarManager.Bossbars.ToDictionary(bossbar => bossbar.Key.ToString(), bossbar => bossbar.Value.Name);
     }

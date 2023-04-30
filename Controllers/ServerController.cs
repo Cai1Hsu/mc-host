@@ -46,9 +46,7 @@ public class ServerController : ControllerBase
     {
         if (host == null || command == null) return false;
 
-        host.SendCommand(command);
-
-        return true;
+        return host.SendCommand(command);
     }
 
     [HttpPost("RunCommandAs")]
@@ -56,9 +54,7 @@ public class ServerController : ControllerBase
     {
         if (host == null || player == null || command == null) return false;
 
-        host.RunCommandAs(player, command);
-
-        return true;
+        return host.RunCommandAs(player, command);
     }
 
     [HttpPost("TellRaw")]
@@ -66,9 +62,7 @@ public class ServerController : ControllerBase
     {
         if (host == null || player == null || msg == null) return false;
 
-        host.TellRaw(player, msg);
-
-        return true;
+        return host.TellRaw(player, msg);
     }
 
     [HttpGet("GetOnlinePlayerCount")]
@@ -98,17 +92,7 @@ public class ServerController : ControllerBase
     [HttpGet("GetServerStatus")]
     public string GetServerStatus()
     {
-        if (host == null) return "Host offline";
-
-        if (host.serverProcess == null) return "Process offline";
-
-        if (!host.HasRunningInstence) return "Process offline";
-
-        if (host.IsDone) return "Running";
-
-        if (host.HasIntilizedInstence) return "Prepairing to run";
-
-        return "Intilizing";
+        return host?.GetStatus() ?? "Host offline";
     }
 
     [HttpGet("GetMessageList")]
@@ -126,12 +110,12 @@ public class ServerController : ControllerBase
 
         if (host?.bossbarManager != null) res.Add("BossbarManager");
 
-        if (host?.onlineBoardManager!= null) res.Add("OnlineBoardManager");
+        if (host?.onlineBoardManager != null) res.Add("OnlineBoardManager");
 
         if (host?.customCommandManager != null) res.Add("CustomCommandManager");
 
         if (host?.serverProcess != null) res.Add("ServerProcessManager");
-    
+
         return res;
     }
 }

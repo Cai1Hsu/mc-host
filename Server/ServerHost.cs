@@ -50,7 +50,7 @@ namespace mchost.Server
 
         public CustomCommandManager customCommandManager = null!;
 
-        public LogHandler logHandler = new LogHandler();
+        public LogHandler logHandler = null!;
 
         public StringBuilder ServerLogBuilder { get; private set; } = new StringBuilder();
 
@@ -60,7 +60,7 @@ namespace mchost.Server
         {
             get
             {
-                return HasRunningInstence && serverProcess.IsDone;
+                return serverProcess.IsDone;
             }
         }
 
@@ -103,11 +103,9 @@ namespace mchost.Server
                     Thread.Sleep(1000);
                     LoopCount++;
 
+                    Logging.Logger.Log(GetStatus());
+
                     if (!HasIntilizedInstence) return;
-
-                    CheckCrash();
-
-                    if (!HasRunningInstence) return;
 
                     if (IsDone && LoopCount % 60 == 0) SaveMessageList();
 
@@ -142,13 +140,13 @@ namespace mchost.Server
         /// </summary>
         public TimeSpan GetPlayerPlayTime(string player) => this.PlayersPlayTime[player];
 
-        public void SendCommand(string command) => serverProcess.SendCommand(command);
+        public bool SendCommand(string command) => serverProcess.SendCommand(command);
 
-        public void TellRaw(string player, RawJson json) => SendCommand($"/tellraw {player} {json.ToString()}");
+        public bool TellRaw(string player, RawJson json) => SendCommand($"/tellraw {player} {json.ToString()}");
 
-        public void TellRaw(string player, string msg) => SendCommand($"/tellraw {player} {{\"text\":\"{msg}\"}}");
+        public bool TellRaw(string player, string msg) => SendCommand($"/tellraw {player} {{\"text\":\"{msg}\"}}");
 
-        public void RunCommandAs(string player, string command) => SendCommand($"/execute as {player} run {command.TrimStart('/')}");
+        public bool RunCommandAs(string player, string command) => SendCommand($"/execute as {player} run {command.TrimStart('/')}");
 
         public void HandleLog(object sender, DataReceivedEventArgs args)
         {
@@ -170,9 +168,11 @@ namespace mchost.Server
             }
         }
 
-        public void CheckCrash()
+        public void OnServerProcessExit()
         {
-            Process java = serverProcess.java;
+            Process? java = serverProcess.java;
+
+            if (java == null) return;
 
             if (java.HasExited)
             {
@@ -200,8 +200,9 @@ namespace mchost.Server
         {
             serverProcess.StartServerProcess();
 
-            serverProcess.java.OutputDataReceived += HandleLog;
-            serverProcess.java.BeginOutputReadLine();
+            if (serverProcess.java == null) return;
+
+            RegisterNewLogHandler();
         }
 
         public void StartServer(string jre, string args)
@@ -217,8 +218,9 @@ namespace mchost.Server
 
             serverProcess.StartServerProcess();
 
-            serverProcess.java.OutputDataReceived += HandleLog;
-            serverProcess.java.BeginOutputReadLine();
+            if (serverProcess.java == null) return;
+
+            RegisterNewLogHandler();
         }
 
         public void SaveTimeStatistics()
@@ -338,6 +340,27 @@ namespace mchost.Server
             TellRaw(player, greet);
             TellRaw(player, new RawJson("This is a technical preview of mchost(github.com/cai1hsu/mc-host), if you find any bugs, please report to the server owner.", "yellow"));
             TellRaw(player, new RawJson("Our server supports custom command, type .help for more info.", "yellow"));
+        }
+
+        public string GetStatus()
+        {
+            Logging.Logger.Log($"{HasIntilizedInstence},{HasRunningInstence},{IsDone}");
+            if (HasIntilizedInstence) return "Serving";
+
+            if (HasRunningInstence) return "Prepairing to run";
+
+            return "Process offline";
+        }
+
+        public void RegisterNewLogHandler()
+        {
+            logHandler = new LogHandler();
+
+            if (serverProcess.java == null) return;
+
+            serverProcess.java.OutputDataReceived += HandleLog;
+            serverProcess.java.BeginOutputReadLine();
+
         }
 
         public void SetDone()

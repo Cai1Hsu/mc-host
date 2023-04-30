@@ -9,6 +9,19 @@ var host = new ServerHost();
 
 ServerHost.SetServerHost(host);
 
+ServerHost.GetServerHost()?.StartServer("/usr/lib/jvm/java-17-openjdk/bin/java", "-server -Xmx1024M -Xms1024M -jar server.jar nogui");
+
+bool quit = false;
+
+Console.CancelKeyPress += (sender, e) =>
+{
+    e.Cancel = true;
+    quit = true;
+};
+
+SpinWait.SpinUntil(() => quit);
+return;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

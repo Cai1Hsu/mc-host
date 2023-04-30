@@ -5,27 +5,23 @@ namespace mchost.Server
 {
     public class ServerProcessManager
     {
-        public Process java { get; set; } = null!;
+        public ServerHost? host { get; set; } = ServerHost.GetServerHost();
+
+        public Process? java { get; set; }
 
         public ProcessStartInfo psi { get; set; } = null!;
 
         public List<string> ProcessLog { get; set; } = new();
 
-        public bool IsDone { get; private set; } = false;
+        public bool IsDone { get; set; } = false;
 
-        public bool IsRunning
-        {
-            get
-            {
-                return java != null && !java.HasExited;
-            }
-        }
+        public bool IsRunning { get; set; } = false;
 
         public bool IsIntilized
         {
             get
             {
-                return java != null && psi != null;
+                return IsDone;
             }
         }
 
@@ -47,11 +43,20 @@ namespace mchost.Server
             ProcessLog = new List<string>();
 
             IsDone = false;
+            IsRunning = true;
+
+            java.Exited += (sender, e) =>
+            {
+                IsDone = false;
+                IsRunning = false;
+
+                host?.OnServerProcessExit();
+            };
         }
 
         public void Terminate()
         {
-            java.Kill();
+            java?.Kill();
         }
 
         public void StopServer()
@@ -65,7 +70,7 @@ namespace mchost.Server
 
             try
             {
-                java.StandardInput.WriteLine(command);
+                java?.StandardInput.WriteLine(command);
                 return true;
             }
             catch (Exception) { }
