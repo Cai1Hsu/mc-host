@@ -12,7 +12,7 @@ namespace mchost.Logging
         public static void Log(string message)
         {
             string log = _prefix + GetTimePrefix() + " " + message;
-            
+
             Logs.Add(log);
             Console.WriteLine(log);
         }
@@ -30,7 +30,7 @@ namespace mchost.Logging
                     }
                 }
             }
-            catch(Exception)
+            catch (Exception)
             {
 
             }

@@ -55,7 +55,7 @@ namespace mchost.Bossbar
                 Logging.Logger.Log("Failed to load bossbars.json");
                 host?.TellRaw("@a", "[Server] Failed to load bossbars.json");
             }
-            
+
             foreach (Bossbar bossbar in Bossbars.Values)
             {
                 host?.SendCommand($"/bossbar set {bossbar.guid} name \"{bossbar.Name}\"");
@@ -115,7 +115,7 @@ namespace mchost.Bossbar
                 File.Create("bossbars.json");
                 return false;
             }
-            
+
             try
             {
                 using (FileStream fs = File.OpenRead("bossbars.json"))

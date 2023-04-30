@@ -7,7 +7,7 @@ namespace mchost.Overlays
         private const string SCOREBOARD_TITLE = "Online Stats";
 
         private ServerHost? host;
-        
+
         public ScoreBoard OnlineBoard { get; set; }
 
         public void Show()
@@ -22,7 +22,7 @@ namespace mchost.Overlays
             var PlayersPlayTime = host?.PlayersPlayTime;
 
             if (PlayersPlayTime == null) return;
-            
+
             foreach (var player in PlayersPlayTime)
             {
                 OnlineBoard.SetScore(player.Key, (int)player.Value.TotalMinutes);

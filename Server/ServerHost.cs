@@ -25,7 +25,7 @@ namespace mchost.Server
                 {
                     result.Add(player.Key, player.Value);
                 }
-                
+
                 foreach (var player in OnlinePlayers)
                 {
                     TimeSpan time = OnlinePlayers.ContainsKey(player.Key) ? DateTime.Now - OnlinePlayers[player.Key] : TimeSpan.Zero;
@@ -97,16 +97,16 @@ namespace mchost.Server
             HostThread = new Thread(() =>
             {
                 int LoopCount = 0;
-   
+
                 while (true)
                 {
                     Thread.Sleep(1000);
                     LoopCount++;
 
                     if (!HasIntilizedInstence) return;
-                    
+
                     CheckCrash();
-                    
+
                     if (!HasRunningInstence) return;
 
                     if (IsDone && LoopCount % 60 == 0) SaveMessageList();
@@ -319,7 +319,7 @@ namespace mchost.Server
             }
         }
 
-                public void GreetPlayer(string player)
+        public void GreetPlayer(string player)
         {
             RawJson greet = new RawJson($"Hello {player}, welcome to ").WriteStartObject()
                 .WriteText("Tanghu Esports Minecraft Server")

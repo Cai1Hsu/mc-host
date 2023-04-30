@@ -20,7 +20,7 @@ public class LogHandler
 
     public void AnalyzeLog(string log)
     {
-        
+
         // [07:28:21] [Server thread/INFO]: Done (2.958s)! For help, type "help"
         if (log[0] != '[') return;
 
@@ -63,11 +63,11 @@ public class LogHandler
     {
         if (logContent.Contains("Failed to start the minecraft server"))
         {
-             Logging.Logger.Log("Minecraft Server failed to start. Maybe the lock file was occupied");
+            Logging.Logger.Log("Minecraft Server failed to start. Maybe the lock file was occupied");
         }
         else
         {
-             Logging.Logger.Log("Minecraft Server encountered an unexpected error.");
+            Logging.Logger.Log("Minecraft Server encountered an unexpected error.");
         }
     }
 
@@ -80,7 +80,7 @@ public class LogHandler
             string sender = logContent[1..logContent.IndexOf(">")];
             string message = logContent[(logContent.IndexOf(">") + 2)..];
             host?.MessageList.Add(new PlayerMessage { Content = message, Sender = sender, Time = DateTime.Now });
-            
+
             if (message.StartsWith('.'))
             {
                 try
@@ -102,7 +102,7 @@ public class LogHandler
             // This is needed in case a new player joined the game
             host?.UpdateStoredPlayTime(playerName);
             host?.onlineBoardManager.Update();
-            
+
             host?.GreetPlayer(playerName);
             Logging.Logger.Log($"Player {playerName} joined the game");
         }

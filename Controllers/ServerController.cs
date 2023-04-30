@@ -23,15 +23,15 @@ public class ServerController : ControllerBase
         if (host == null || args == null) return false;
 
         host?.StartServer(jre, args);
-        
+
         return true;
     }
 
     [HttpPost("StopServer")]
     public bool StopServer()
     {
-         host?.StopServer();
-         return true;
+        host?.StopServer();
+        return true;
     }
 
     [HttpPost("SendCommand")]
@@ -41,14 +41,14 @@ public class ServerController : ControllerBase
 
         host.SendCommand(command);
 
-        return  true;
+        return true;
     }
 
     [HttpPost("RunCommandAs")]
     public bool RunCommandAs(string player, string command)
     {
         if (host == null || player == null || command == null) return false;
-        
+
         host.RunCommandAs(player, command);
 
         return true;
@@ -88,7 +88,7 @@ public class ServerController : ControllerBase
         return host?.ServerLogBuilder.ToString() ?? string.Empty;
     }
 
-    [HttpGet( "GetServerStatus")]
+    [HttpGet("GetServerStatus")]
     public bool GetServerStatus()
     {
         return host?.IsDone ?? false;

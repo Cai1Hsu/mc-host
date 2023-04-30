@@ -45,7 +45,7 @@ namespace mchost.Server
                 throw new Exception("Java exited before we could handle it. Please check the output for more information.");
 
             ProcessLog = new List<string>();
-            
+
             IsDone = false;
         }
 
