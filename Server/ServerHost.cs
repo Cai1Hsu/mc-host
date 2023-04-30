@@ -15,6 +15,7 @@ namespace mchost.Server
         public Dictionary<string, DateTime> OnlinePlayers = new Dictionary<string, DateTime>();
 
         public Dictionary<string, TimeSpan> StoredPlayersPlayTime = new Dictionary<string, TimeSpan>();
+
         public Dictionary<string, TimeSpan> PlayersPlayTime
         {
             get
@@ -97,10 +98,10 @@ namespace mchost.Server
 
         public void UpdateStoredPlayTime(string player)
         {
-            if (!PlayersPlayTime.ContainsKey(player))
-                PlayersPlayTime.Add(player, TimeSpan.Zero);
+            if (!StoredPlayersPlayTime.ContainsKey(player))
+                StoredPlayersPlayTime.Add(player, TimeSpan.Zero);
 
-            PlayersPlayTime[player] += DateTime.Now - OnlinePlayers[player];
+            StoredPlayersPlayTime[player] += DateTime.Now - OnlinePlayers[player];
 
             try
             {
@@ -141,9 +142,10 @@ namespace mchost.Server
             {
                 logHandler.AnalyzeLog(data);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 Logging.Logger.Log($"Error occurred when trying to analyze log. The log \'{data}\'");
+                Logging.Logger.Log(e.Message);
             }
         }
 
@@ -237,7 +239,7 @@ namespace mchost.Server
                     JsonElement playerPlayTime = root.GetProperty("PlayerPlayTime");
                     foreach (JsonProperty property in playerPlayTime.EnumerateObject())
                     {
-                        PlayersPlayTime.Add(property.Name, TimeSpan.FromMinutes(property.Value.GetInt32()));
+                        StoredPlayersPlayTime.Add(property.Name, TimeSpan.FromMinutes(property.Value.GetInt32()));
                     }
                 }
             }
@@ -351,6 +353,8 @@ namespace mchost.Server
                     if (!HasIntilizedInstence) continue;
 
                     if (IsDone && LoopCount % 60 == 0) SaveMessageList();
+
+                    if (IsDone && LoopCount % 60 == 0) SaveTimeStatistics();
 
                     if (IsDone && LoopCount % 1200 == 0) SendCommand("save-all");
 

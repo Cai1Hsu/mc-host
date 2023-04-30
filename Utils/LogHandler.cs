@@ -73,12 +73,14 @@ public class LogHandler
 
     private void HandleINFO(string logContent)
     {
+        logContent = logContent.TrimStart(' ');
+
         // message
-        if (logContent.StartsWith("<"))
+        if (logContent.StartsWith('<'))
         {
             // Someone sent a message
-            string sender = logContent[1..logContent.IndexOf(">")];
-            string message = logContent[(logContent.IndexOf(">") + 2)..];
+            string sender = logContent[1..logContent.IndexOf('>')];
+            string message = logContent[(logContent.IndexOf('>') + 2)..];
             host?.MessageList.Add(new PlayerMessage { Content = message, Sender = sender, Time = DateTime.Now });
 
             if (message.StartsWith('.'))
@@ -87,9 +89,9 @@ public class LogHandler
                 {
                     customCommandManager?.Execute(message, sender);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-
+                    Logging.Logger.Log("Error occurred executing custom command : " + e.Message);
                 }
             }
         }

@@ -5,7 +5,7 @@ namespace mchost.Overlays
 {
     public class OnlineBoardManager
     {
-        private const string SCOREBOARD_TITLE = "Online Stats";
+        private const string SCOREBOARD_TITLE = "在线时长(分钟)";
 
         private const string SCOREBOARD_NAME = "OnlineStats";
 
@@ -15,6 +15,8 @@ namespace mchost.Overlays
 
         public void Show()
         {
+            // recreate in case name or something changed.
+            host?.SendCommand($"/scoreboard objectives remove {OnlineBoard.name}");
             host?.SendCommand($"/scoreboard objectives add {OnlineBoard.name} dummy \"{OnlineBoard.title}\"");
 
             host?.SendCommand($"/scoreboard objectives setdisplay sidebar {OnlineBoard.name}");
