@@ -35,6 +35,13 @@ namespace mchost.Server
         public void StartServerProcess()
         {
             java = Process.Start(psi) ?? throw new Exception("Failed to start Minecraft Server. Are you sure you have Java installed?");
+            java.Exited += (sender, e) =>
+            {
+                IsDone = false;
+                IsRunning = false;
+
+                host?.OnServerProcessExit();
+            };
             StartTime = DateTime.Now;
 
             if (java.HasExited)
@@ -44,14 +51,6 @@ namespace mchost.Server
 
             IsDone = false;
             IsRunning = true;
-
-            java.Exited += (sender, e) =>
-            {
-                IsDone = false;
-                IsRunning = false;
-
-                host?.OnServerProcessExit();
-            };
         }
 
         public void Terminate()

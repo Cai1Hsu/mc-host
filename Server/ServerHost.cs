@@ -93,29 +93,6 @@ namespace mchost.Server
             // onlineBoardManager.LoadScores();
             LoadMessageList();
             LoadTimeStatistics();
-
-            HostThread = new Thread(() =>
-            {
-                int LoopCount = 0;
-
-                while (true)
-                {
-                    Thread.Sleep(1000);
-                    LoopCount++;
-
-                    Logging.Logger.Log(GetStatus());
-
-                    if (!HasIntilizedInstence) return;
-
-                    if (IsDone && LoopCount % 60 == 0) SaveMessageList();
-
-                    if (IsDone && LoopCount % 1200 == 0) SendCommand("save-all");
-
-                    if (IsDone && LoopCount % 60 == 0) onlineBoardManager?.Update();
-                }
-            });
-
-            HostThread.Start();
         }
 
         public void UpdateStoredPlayTime(string player)
@@ -157,6 +134,8 @@ namespace mchost.Server
             if (!IsDone && data.Contains("Done")) SetDone();
 
             ServerLogBuilder.AppendLine(data);
+
+            Logging.Logger.Log("[Minecraft] " + data);
 
             try
             {
@@ -202,7 +181,7 @@ namespace mchost.Server
 
             if (serverProcess.java == null) return;
 
-            RegisterNewLogHandler();
+            AfterStartServerHook();
         }
 
         public void StartServer(string jre, string args)
@@ -220,7 +199,7 @@ namespace mchost.Server
 
             if (serverProcess.java == null) return;
 
-            RegisterNewLogHandler();
+            AfterStartServerHook();
         }
 
         public void SaveTimeStatistics()
@@ -344,15 +323,14 @@ namespace mchost.Server
 
         public string GetStatus()
         {
-            Logging.Logger.Log($"{HasIntilizedInstence},{HasRunningInstence},{IsDone}");
-            if (HasIntilizedInstence) return "Serving";
+            if (HasIntilizedInstence) return "Running";
 
             if (HasRunningInstence) return "Prepairing to run";
 
             return "Process offline";
         }
 
-        public void RegisterNewLogHandler()
+        public void AfterStartServerHook()
         {
             logHandler = new LogHandler();
 
@@ -361,13 +339,32 @@ namespace mchost.Server
             serverProcess.java.OutputDataReceived += HandleLog;
             serverProcess.java.BeginOutputReadLine();
 
+            HostThread = new Thread(() =>
+            {
+                int LoopCount = 0;
+
+                while (true)
+                {
+                    Thread.Sleep(1000);
+                    LoopCount++;
+
+                    if (!HasIntilizedInstence) continue;
+
+                    if (IsDone && LoopCount % 60 == 0) SaveMessageList();
+
+                    if (IsDone && LoopCount % 1200 == 0) SendCommand("save-all");
+
+                    if (IsDone && LoopCount % 60 == 0) onlineBoardManager?.Update();
+                }
+            });
+
+            HostThread.Start();
         }
 
         public void SetDone()
         {
             serverProcess.SetDone();
 
-            serverProcess = new ServerProcessManager();
             customCommandManager = new CustomCommandManager();
             bossbarManager = new BossbarManager();
             onlineBoardManager = new OnlineBoardManager();

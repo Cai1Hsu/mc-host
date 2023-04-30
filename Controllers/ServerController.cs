@@ -22,7 +22,15 @@ public class ServerController : ControllerBase
     {
         if (host == null || args == null) return false;
 
-        host?.StartServer(jre, args);
+        try
+        {
+            host?.StartServer(jre, args);
+        }
+        catch (Exception e)
+        {
+            _logger.LogInformation(e.ToString());
+            return false;
+        }
 
         return true;
     }
