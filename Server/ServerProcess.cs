@@ -69,6 +69,8 @@ namespace mchost.Server
 
             try
             {
+                // TODO Remove this on release.
+                Logging.Logger.Log($"Sending command: {command}");
                 java?.StandardInput.WriteLine(command);
                 return true;
             }

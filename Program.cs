@@ -1,6 +1,17 @@
 using mchost.Server;
 using mchost.Logging;
 
+var headlessHost = new ServerHost();
+ServerHost.SetServerHost(headlessHost);
+var ccm = new mchost.CustomCommand.CustomCommandManager();
+ccm.Execute(".help", "Cai1Hsu");
+ccm.Execute(".set num 123", "Cai1Hsu");
+ccm.Execute(".set home \"123,-999,123\"", "Cai1Hsu");
+ccm.Execute(".set home a boy named Bob", "Cai1Hsu");
+ccm.Execute(".unknown", "Cai1Hsu");
+ccm.Execute(".aLineEndWith ", "Cai1Hsu");
+return;
+
 const bool TECHNICAL_PREVIEW = true;
 
 Logger.Log("Welcome to mchost!");

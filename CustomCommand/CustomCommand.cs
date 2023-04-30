@@ -18,12 +18,26 @@ public class CustomCommandManager
 
     public void Execute(string cmd, string player)
     {
-        string cmd_name = cmd.Substring(0, cmd.IndexOf(' ')).Trim(' ');
-        string trimed = cmd.Substring(cmd.IndexOf(' ')).Trim(' ');
+        int separator = cmd.IndexOf(' ');
+
+        string cmd_name = "";
+        string trimed = "";
+        if (separator == -1)
+        {
+            cmd_name = cmd.Substring(1).Trim(' ').ToLower();
+        }
+        else
+        {
+            cmd_name = cmd.Substring(1, separator).Trim(' ').ToLower();
+            trimed = cmd[separator..].Trim(' ');
+        }
+
+        Logging.Logger.Log($"params : {player} ,\'{cmd_name}\','{trimed}'");
 
         if (BuiltInCommands.ContainsKey(cmd_name))
         {
-            new Task(() => BuiltInCommands[trimed]?.Action(player, trimed)).Start();
+            Logging.Logger.Log($"Built-in command: {cmd_name}");
+            new Task(() => BuiltInCommands[cmd_name]?.Action(player, trimed)).Start();
 
             host?.TellRaw(player, new RawJson($"[CustomCommand] Executed built-in command: {trimed}", "yellow"));
             return;
@@ -107,7 +121,9 @@ public class CustomCommandManager
                 }
 
                 string var = inputs[0];
-                string msg = input.Substring(var.Length).Trim(' ').Trim('\"');
+                string msg = input.Substring(var.Length).Trim(new char[] { ' ', '\"' });
+
+                Logging.Logger.Log($"set: \'{var}\',\'{msg}\'");
 
                 if (BuiltInCommands.ContainsKey(var))
                 {
@@ -125,6 +141,8 @@ public class CustomCommandManager
                     PrivateCommands[player].Add(var, msg);
                 else
                     PrivateCommands[player][var] = msg;
+
+                Logging.Logger.Log($"set: {player}, {var}, {PrivateCommands[player][var]}");
 
                 host?.TellRaw(player, new RawJson($"[+] Command §a{var}§r has been set to §a\"{msg}\"", "yellow"));
 
@@ -287,26 +305,12 @@ public class CustomCommandManager
 
     public void SaveCommands()
     {
+        Logging.Logger.Log("Saving custom commands");
         try
         {
-            using (FileStream fs = new FileStream("CustomCommands.json", FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
-            using (Utf8JsonWriter writer = new Utf8JsonWriter(fs))
+            using (FileStream fs = File.Create("CustomCommands.json"))
             {
-                writer.WriteStartObject();
-                writer.WritePropertyName("CustomCommands");
-                writer.WriteStartObject();
-                foreach (string player in PrivateCommands.Keys)
-                {
-                    writer.WritePropertyName(player);
-                    writer.WriteStartObject();
-                    foreach (string command in PrivateCommands[player].Keys)
-                    {
-                        writer.WriteString(command, PrivateCommands[player][command]);
-                    }
-                    writer.WriteEndObject();
-                }
-                writer.WriteEndObject();
-                writer.WriteEndObject();
+                JsonSerializer.Serialize(fs, PrivateCommands);
             }
         }
         catch (Exception)
@@ -319,24 +323,11 @@ public class CustomCommandManager
     {
         try
         {
-            using (FileStream fs = new FileStream("CustomCommands.json", FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite))
-            using (JsonDocument document = JsonDocument.Parse(fs))
-            {
-                JsonElement root = document.RootElement;
-                JsonElement playerPlayTime = root.GetProperty("CustomCommands");
-                foreach (JsonProperty player in playerPlayTime.EnumerateObject())
-                {
-                    string playerName = player.Name;
-                    PrivateCommands.Add(playerName, new Dictionary<string, string>());
-                    foreach (JsonProperty command in player.Value.EnumerateObject())
-                    {
-                        string commandName = command.Name;
-                        string commandValue = command.Value.GetString() ?? "";
-                        PrivateCommands[playerName].Add(commandName, commandValue);
-                    }
-                }
-
-            }
+            // serialize JSON directly to a file
+           using (FileStream fs = File.OpenRead("CustomCommands.json"))
+           {
+                PrivateCommands = JsonSerializer.DeserializeAsync<Dictionary<string, Dictionary<string, string>>>(fs).Result ?? new();
+           }
         }
         catch (Exception)
         {

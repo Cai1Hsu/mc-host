@@ -14,39 +14,39 @@ namespace mchost.Bossbar
         {
             foreach (Bossbar bossbar in Bossbars.Values)
             {
-                host?.SendCommand($"/bossbar set {bossbar.guid} visible true");
-                host?.SendCommand($"/bossbar set {bossbar.guid} players @a");
+                host?.SendCommand($"/bossbar set minecraft:{bossbar.guid} visible true");
+                host?.SendCommand($"/bossbar set minecraft:{bossbar.guid} players @a");
             }
         }
 
         public void Show(string id)
         {
-            host?.SendCommand($"/bossbar set {id} visible true");
-            host?.SendCommand($"/bossbar set {id} players @a");
+            host?.SendCommand($"/bossbar set minecraft:{id} visible true");
+            host?.SendCommand($"/bossbar set minecraft:{id} players @a");
         }
 
         public void Show(Guid guid)
         {
-            host?.SendCommand($"/bossbar set {guid} visible true");
-            host?.SendCommand($"/bossbar set {guid} players @a");
+            host?.SendCommand($"/bossbar set minecraft:{guid} visible true");
+            host?.SendCommand($"/bossbar set minecraft:{guid} players @a");
         }
 
         public void HideAll()
         {
             foreach (Bossbar bossbar in Bossbars.Values)
             {
-                host?.SendCommand($"/bossbar set {bossbar.guid} visible false");
+                host?.SendCommand($"/bossbar set minecraft:{bossbar.guid} visible false");
             }
         }
 
         public void Hide(string id)
         {
-            host?.SendCommand($"/bossbar set {id} visible false");
+            host?.SendCommand($"/bossbar set minecraft:{id} visible false");
         }
 
         public void Hide(Guid guid)
         {
-            host?.SendCommand($"/bossbar set {guid} visible false");
+            host?.SendCommand($"/bossbar set minecraft:{guid} visible false");
         }
 
         public void UpdateAll()
@@ -60,12 +60,12 @@ namespace mchost.Bossbar
             foreach (Bossbar bossbar in Bossbars.Values)
             {
                 RawJson jsonName = new RawJson($"\"{bossbar.Name}\"");
-                host?.SendCommand($"/bossbar set {bossbar.guid} name \"{jsonName}\"");
-                host?.SendCommand($"/bossbar set {bossbar.guid} color {bossbar.Color.ToString().ToLower()}");
-                host?.SendCommand($"/bossbar set {bossbar.guid} max {bossbar.Max}");
-                host?.SendCommand($"/bossbar set {bossbar.guid} value {bossbar.Value}");
-                host?.SendCommand($"/bossbar set {bossbar.guid} style {bossbar.Style.ToString().ToLower()}");
-                host?.SendCommand($"/bossbar set {bossbar.guid} visible {bossbar.Visible.ToString().ToLower()}");
+                host?.SendCommand($"/bossbar set minecraft:{bossbar.guid} name \"{jsonName}\"");
+                host?.SendCommand($"/bossbar set minecraft:{bossbar.guid} color {bossbar.Color.ToString().ToLower()}");
+                host?.SendCommand($"/bossbar set minecraft:{bossbar.guid} max {bossbar.Max}");
+                host?.SendCommand($"/bossbar set minecraft:{bossbar.guid} value {bossbar.Value}");
+                host?.SendCommand($"/bossbar set minecraft:{bossbar.guid} style {bossbar.Style.ToString().ToLower()}");
+                host?.SendCommand($"/bossbar set minecraft:{bossbar.guid} visible {bossbar.Visible.ToString().ToLower()}");
             }
         }
 
@@ -73,7 +73,7 @@ namespace mchost.Bossbar
         {
             Bossbar bossbar = Bossbars[guid];
 
-            host?.SendCommand($"/bossbar set {bossbar.guid} {propertyName.ToString().ToLower()} \"{value}\"");
+            host?.SendCommand($"/bossbar set minecraft:{bossbar.guid} {propertyName.ToString().ToLower()} \"{value}\"");
         }
 
         public Guid AddBossbar(string name)
@@ -84,6 +84,8 @@ namespace mchost.Bossbar
             host?.SendCommand($"/bossbar add {guid} {name}");
 
             Show(guid);
+
+            SaveBossbarsAsync();
 
             return guid;
         }

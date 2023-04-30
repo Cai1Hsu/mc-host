@@ -373,6 +373,10 @@ namespace mchost.Server
             onlineBoardManager.LoadScores();
             bossbarManager.ShowAll();
             onlineBoardManager.Show();
+
+            // TODO: REMOVE THIS ON RELEASE
+            if (bossbarManager.Bossbars.Count == 0)
+                bossbarManager.AddBossbar(new RawJson("Tanghu Esports Technical Preview").ToString());
         }
 
         public static void SetServerHost(ServerHost host)
