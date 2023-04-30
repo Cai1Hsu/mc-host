@@ -9,13 +9,18 @@ public class LogHandler
 
     private ServerProcessManager? serverProcess;
 
-    private CustomCommandManager? customCommandManager;
+    private CustomCommandManager? customCommandManager
+    {
+        get
+        {
+            return host?.customCommandManager;
+        }
+    }
 
     public LogHandler()
     {
         host = ServerHost.MainHost;
         serverProcess = host?.serverProcess;
-        customCommandManager = host?.customCommandManager;
     }
 
     public void AnalyzeLog(string log)
@@ -85,6 +90,7 @@ public class LogHandler
 
             if (message.StartsWith('.'))
             {
+                Logging.Logger.Log("Custom command received");
                 try
                 {
                     customCommandManager?.Execute(message, sender);
