@@ -1,4 +1,3 @@
-using mchost.CustomCommand;
 using mchost.Server;
 
 namespace mchost.Utils;
@@ -7,20 +6,9 @@ public class LogHandler
 {
     private ServerHost? host;
 
-    private ServerProcessManager? serverProcess;
-
-    private CustomCommandManager? customCommandManager
-    {
-        get
-        {
-            return host?.customCommandManager;
-        }
-    }
-
     public LogHandler()
     {
         host = ServerHost.MainHost;
-        serverProcess = host?.serverProcess;
     }
 
     public void AnalyzeLog(string log)
@@ -93,7 +81,7 @@ public class LogHandler
                 Logging.Logger.Log("Custom command received");
                 try
                 {
-                    customCommandManager?.Execute(message, sender);
+                    host?.SendCustomCommand(message, sender);
                 }
                 catch (Exception e)
                 {

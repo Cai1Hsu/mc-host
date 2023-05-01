@@ -118,6 +118,26 @@ namespace mchost.Server
         /// </summary>
         public TimeSpan GetPlayerPlayTime(string player) => this.PlayersPlayTime[player];
 
+        public bool SendCustomCommand(string command, string player)
+        {
+            try
+            {
+                if (customCommandManager == null)
+                {
+                    Logging.Logger.Log("Custom command manager is null");
+                    return false;
+                }
+
+                customCommandManager.Execute(command, player);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Logging.Logger.Log($"Error occurred when executing custom command \'{command}\', message : {e.Message}");
+            }
+            return false;
+        }
+
         public bool SendCommand(string command) => serverProcess.SendCommand(command);
 
         public bool TellRaw(string player, RawJson json) => SendCommand($"/tellraw {player} {json.ToString()}");
