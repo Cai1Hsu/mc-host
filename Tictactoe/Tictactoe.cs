@@ -242,19 +242,18 @@ public class TictactoeManager
         // [Tictactoe] +---+---+---+---+
         // [Tictactoe] | 1 |___|___|___|
         // [Tictactoe] +---+---+---+---+
-        // [Tictactoe] | 2 |   |   |   |
+        // [Tictactoe] | 2 |___|___|___|
         // [Tictactoe] +---+---+---+---+
-        // [Tictactoe] | 3 |   |   |   |
+        // [Tictactoe] | 3 |___|___|___|
 
         host?.TellRaw("@a", @"[Tictactoe] §a§lCurrent Board:");
         host?.TellRaw("@a", @"[Tictactoe] | \ | A | B | C |");
         host?.TellRaw("@a", @"[Tictactoe] +---+---+---+---+");
-        // host?.TellRaw("@a", ""
-        // host?.TellRaw("@a", $"[Tictactoe] | 1 | {board[0, 0]} | {board[0, 1]} | {board[0, 2]} |");
+        host?.TellRaw("@a", GetBoardLine(board, 1));
         host?.TellRaw("@a", @"[Tictactoe] +---+---+---+---+");
-        host?.TellRaw("@a", $"[Tictactoe] | 2 | {board[1, 0]} | {board[1, 1]} | {board[1, 2]} |");
+        host?.TellRaw("@a", GetBoardLine(board, 2));
         host?.TellRaw("@a", @"[Tictactoe] +---+---+---+---+");
-        host?.TellRaw("@a", $"[Tictactoe] | 3 | {board[2, 0]} | {board[2, 1]} | {board[2, 2]} |");
+        host?.TellRaw("@a", GetBoardLine(board, 3));
     }
 
     public RawJson GetBoardLine(TictactoeMark[,] board,int line)
