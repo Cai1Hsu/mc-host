@@ -5,11 +5,15 @@ using mchost.Overlays;
 using System.Text.Json;
 using System.Text;
 using mchost.CustomCommand;
+using mchost.Tictactoe;
+using Timer = System.Timers.Timer;
 
 namespace mchost.Server
 {
     public class ServerHost
     {
+        public Timer? HostTimer;
+
         public ServerProcessManager serverProcess;
 
         public Dictionary<string, DateTime> OnlinePlayers = new Dictionary<string, DateTime>();
@@ -50,11 +54,11 @@ namespace mchost.Server
 
         public CustomCommandManager customCommandManager = null!;
 
+        public TictactoeManager tictactoeManager = null!;
+
         public LogHandler logHandler = null!;
 
         public StringBuilder ServerLogBuilder { get; private set; } = new StringBuilder();
-
-        public Thread HostThread { get; set; } = null!;
 
         public bool IsDone
         {
@@ -76,7 +80,7 @@ namespace mchost.Server
         {
             get
             {
-                return serverProcess.IsIntilized;
+                return serverProcess.IsDone;
             }
         }
 
@@ -97,10 +101,11 @@ namespace mchost.Server
 
         public void UpdateStoredPlayTime(string player)
         {
-            if (!PlayersPlayTime.ContainsKey(player))
-                PlayersPlayTime.Add(player, TimeSpan.Zero);
+            if (!StoredPlayersPlayTime.ContainsKey(player))
+                StoredPlayersPlayTime.Add(player, TimeSpan.Zero);
 
-            PlayersPlayTime[player] += DateTime.Now - OnlinePlayers[player];
+            // TODO
+            StoredPlayersPlayTime[player] += DateTime.Now - OnlinePlayers[player];
 
             try
             {
@@ -212,9 +217,10 @@ namespace mchost.Server
                     writer.WriteStartObject();
                     writer.WritePropertyName("PlayerPlayTime");
                     writer.WriteStartObject();
-                    foreach (string player in PlayersPlayTime.Keys)
+                    var PlayTime = this.PlayersPlayTime;
+                    foreach (string player in PlayTime.Keys)
                     {
-                        writer.WriteNumber(player, (int)Math.Ceiling(GetPlayerPlayTime(player).TotalMinutes));
+                        writer.WriteNumber(player, (int)Math.Ceiling(PlayTime[player].TotalMinutes));
                     }
                     writer.WriteEndObject();
                     writer.WriteEndObject();
@@ -237,7 +243,7 @@ namespace mchost.Server
                     JsonElement playerPlayTime = root.GetProperty("PlayerPlayTime");
                     foreach (JsonProperty property in playerPlayTime.EnumerateObject())
                     {
-                        PlayersPlayTime.Add(property.Name, TimeSpan.FromMinutes(property.Value.GetInt32()));
+                        StoredPlayersPlayTime.Add(property.Name, TimeSpan.FromMinutes(property.Value.GetInt32()));
                     }
                 }
             }
@@ -302,6 +308,11 @@ namespace mchost.Server
 
         public void GreetPlayer(string player)
         {
+            // This is needed in case a new player joined the game
+            UpdateStoredPlayTime(player);
+            onlineBoardManager.Update();
+            bossbarManager.ShowAll();
+
             RawJson greet = new RawJson()
                 .WriteStartArray()
                 .WriteStartObject()
@@ -318,7 +329,7 @@ namespace mchost.Server
 
             TellRaw(player, greet);
             TellRaw(player, new RawJson("This is a technical preview of mchost(github.com/cai1hsu/mc-host), if you find any bugs, please report to the server owner.", "yellow"));
-            TellRaw(player, new RawJson("Our server supports custom command, type .help for more info.", "yellow"));
+            TellRaw(player, new RawJson("Our server supports custom command, type §a.help§r for more info.", "yellow"));
         }
 
         public string GetStatus()
@@ -339,26 +350,19 @@ namespace mchost.Server
             serverProcess.java.OutputDataReceived += HandleLog;
             serverProcess.java.BeginOutputReadLine();
 
-            HostThread = new Thread(() =>
+            HostTimer = new Timer(TimeSpan.FromSeconds(1));
+            HostTimer.Elapsed += (sender, e) =>
             {
-                int LoopCount = 0;
-
-                while (true)
+                if (HasIntilizedInstence && IsDone)
                 {
-                    Thread.Sleep(1000);
-                    LoopCount++;
+                    if (DateTime.Now.Minute % 1 == 0) SaveMessageList();
 
-                    if (!HasIntilizedInstence) continue;
+                    if (DateTime.Now.Minute % 20 == 0) SendCommand("save-all");
 
-                    if (IsDone && LoopCount % 60 == 0) SaveMessageList();
-
-                    if (IsDone && LoopCount % 1200 == 0) SendCommand("save-all");
-
-                    if (IsDone && LoopCount % 60 == 0) onlineBoardManager?.Update();
+                    if (DateTime.Now.Minute % 1 == 0 && onlineBoardManager != null) onlineBoardManager.Update();
                 }
-            });
-
-            HostThread.Start();
+            };
+            HostTimer.Start();
         }
 
         public void SetDone()
@@ -368,6 +372,7 @@ namespace mchost.Server
             customCommandManager = new CustomCommandManager();
             bossbarManager = new BossbarManager();
             onlineBoardManager = new OnlineBoardManager();
+            tictactoeManager = new TictactoeManager();
 
             bossbarManager.LoadBossbars();
             onlineBoardManager.LoadScores();

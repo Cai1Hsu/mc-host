@@ -9,7 +9,7 @@ public class CustomCommandManager
 {
     private ServerHost? host;
 
-    public Dictionary<string, MyCommand> BuiltInCommands = new();
+    public Dictionary<string, ServerCommand> BuiltInCommands = new();
 
     // Dictionary<player, Dictionary<command, option>>
     public Dictionary<string, Dictionary<string, string>> PrivateCommands;
@@ -38,7 +38,7 @@ public class CustomCommandManager
         {
             BuiltInCommands[cmd_name]?.Action(player, trimed);
 
-            host?.TellRaw(player, new RawJson($"[CustomCommand] Executed built-in command: {trimed}", "yellow"));
+            // host?.TellRaw(player, new RawJson($"[CustomCommand] Executed built-in command: {trimed}", "yellow"));
             return;
         }
 
@@ -84,7 +84,7 @@ public class CustomCommandManager
         void BindBuiltInCommands()
         {
             // .help
-            BuiltInCommands.Add("help", new MyCommand("help", ".help            Show help message", (player, _) =>
+            BuiltInCommands.Add("help", new ServerCommand("help", ".help            Show help message", (player, _) =>
             {
                 host?.TellRaw(player, "§a§lCustomCommand Help");
                 host?.TellRaw(player, "========================");
@@ -110,7 +110,7 @@ public class CustomCommandManager
 
 
             // .set
-            BuiltInCommands.Add("set", new MyCommand("set", ".set [var] [msg]  Set a custom message or command", (player, input) =>
+            BuiltInCommands.Add("set", new ServerCommand("set", ".set [var] [msg]  Set a custom message or command", (player, input) =>
             {
                 string[] inputs = input.Split(' ');
                 if (inputs.Length < 2)
@@ -147,7 +147,7 @@ public class CustomCommandManager
             }));
 
             // .exec
-            BuiltInCommands.Add("exec", new MyCommand("exec", ".exec  [command] Execute command on server", (player, input) =>
+            BuiltInCommands.Add("exec", new ServerCommand("exec", ".exec  [command] Execute command on server", (player, input) =>
             {
                 if (input.Length == 0)
                 {
@@ -161,7 +161,7 @@ public class CustomCommandManager
             }));
 
             // .del
-            BuiltInCommands.Add("del", new MyCommand("del", ".del [command] Delete a custom command", (player, input) =>
+            BuiltInCommands.Add("del", new ServerCommand("del", ".del [command] Delete a custom command", (player, input) =>
             {
                 if (input.Length == 0)
                 {
@@ -186,117 +186,177 @@ public class CustomCommandManager
                 SaveCommands();
             }));
 
+
+            // .coin
+            BuiltInCommands.Add("coin", new ServerCommand("coin", ".coin  Flip a coin", (player, _) =>
+            {
+                var result = new Random().Next(0, 2) == 0 ? "heads" : "tails";
+                host?.TellRaw("@a", new RawJson($"[+] {player} flipped a coin and got §a{result}§r", "yellow"));
+            }));
+
+            // .rand
+            BuiltInCommands.Add("rand", new ServerCommand("rand" ,".rand [min] [max] Generate a rand num", (player, input) =>
+            {
+                var args = input.Split(' ');
+
+                if (args.Length != 2)
+                {
+                    host?.TellRaw(player, new RawJson("[!] Please specify the min and max", "red"));
+                    return;
+                }
+
+                if (!int.TryParse(args[0], out int min) || !int.TryParse(args[1], out int max))
+                {
+                    host?.TellRaw(player, new RawJson("[!] Please input valid min and max", "red"));
+                    return;
+                }
+
+                if (min > max)
+                {
+                    host?.TellRaw(player, new RawJson("[!] Min must be less than max", "red"));
+                    return;
+                }
+
+                var result = new Random().Next(min, max + 1);
+                host?.TellRaw("@a", new RawJson($"[+] {player}'s lucky number is §a{result}§r!", "yellow"));
+            }));
+
+            // .pick
+            // pick a random player
+            BuiltInCommands.Add("pick", new ServerCommand("pick", ".pick  Pick a random player", (player, _) =>
+            {
+                var players = host?.OnlinePlayers.Keys.ToList();
+
+                // Well, this should never happen. But just in case.
+                if (players == null || players.Count == 0)
+                {
+                    host?.TellRaw(player, new RawJson("[!] No players found", "red"));
+                    return;
+                }
+
+                var result = players[new Random().Next(0, players.Count)];
+                host?.TellRaw("@a", new RawJson($"[+] §a{result}§r was picked!", "yellow"));
+            }));
+
+            // .tictactoe
+            BuiltInCommands.Add("tictactoe", new ServerCommand("tictactoe", ".tictactoe  Start a game of tictactoe", (player, _) =>
+            {
+                var tictactoeManager = host?.tictactoeManager;
+                tictactoeManager?.StartGame(player);
+            }));
+
             // .getbars
-            BuiltInCommands.Add("getbars", new MyCommand("getbars", ".getbars  Get the list of bossbars", (player, _) =>
-            {
-                var bossbars = host?.bossbarManager.Bossbars;
+            // BuiltInCommands.Add("getbars", new MyCommand("getbars", ".getbars  Get the list of bossbars", (player, _) =>
+            // {
+            //     var bossbars = host?.bossbarManager.Bossbars;
 
-                if (bossbars == null)
-                {
-                    host?.TellRaw(player, new RawJson("[!] Bossbars not found", "red"));
-                    return;
-                }
+            //     if (bossbars == null)
+            //     {
+            //         host?.TellRaw(player, new RawJson("[!] Bossbars not found", "red"));
+            //         return;
+            //     }
 
-                host?.TellRaw(player, new RawJson("§a§lBossbars:", "yellow"));
+            //     host?.TellRaw(player, new RawJson("§a§lBossbars:", "yellow"));
 
-                foreach (var bar in bossbars.Keys)
-                {
-                    host?.TellRaw(player, $"  §a{bar}§r: {bossbars[bar].Name}");
-                }
-            }));
+            //     foreach (var bar in bossbars.Keys)
+            //     {
+            //         host?.TellRaw(player, $"  §a{bar}§r: {bossbars[bar].Name}");
+            //     }
+            // }));
 
-            // .updatebars
-            BuiltInCommands.Add("updatebars", new MyCommand("updatebars", ".updatebars  Update the list of bossbars", (player, _) =>
-            {
-                host?.bossbarManager.UpdateAll();
-                host?.TellRaw(player, new RawJson("[+] Bossbars updated", "yellow"));
-            }));
+            // // .updatebars
+            // BuiltInCommands.Add("updatebars", new MyCommand("updatebars", ".updatebars  Update the list of bossbars", (player, _) =>
+            // {
+            //     host?.bossbarManager.UpdateAll();
+            //     host?.TellRaw(player, new RawJson("[+] Bossbars updated", "yellow"));
+            // }));
 
-            foreach (var cmd in BuiltInCommands)
-            {
-                cmd.Value.Action += (player, input) =>
-                {
-                    Logger.Log($"Command \'{input}\' executed by {player}");
-                };
-            }
+            // foreach (var cmd in BuiltInCommands)
+            // {
+            //     cmd.Value.Action += (player, input) =>
+            //     {
+            //         Logger.Log($"Command \'{input}\' executed by {player}");
+            //     };
+            // }
 
-            // .showallbars
-            BuiltInCommands.Add("showallbars", new MyCommand("showallbars", ".showallbars  Show all bossbars", (player, _) =>
-            {
-                var bossbarManager = host?.bossbarManager;
+            // // .showallbars
+            // BuiltInCommands.Add("showallbars", new MyCommand("showallbars", ".showallbars  Show all bossbars", (player, _) =>
+            // {
+            //     var bossbarManager = host?.bossbarManager;
 
-                if (bossbarManager == null)
-                {
-                    host?.TellRaw(player, new RawJson("[!] bossbarManager not found", "red"));
-                    return;
-                }
+            //     if (bossbarManager == null)
+            //     {
+            //         host?.TellRaw(player, new RawJson("[!] bossbarManager not found", "red"));
+            //         return;
+            //     }
 
-                bossbarManager.ShowAll();
+            //     bossbarManager.ShowAll();
 
-                host?.TellRaw(player, new RawJson("[+] Bossbars shown", "yellow"));
-            }));
+            //     host?.TellRaw(player, new RawJson("[+] Bossbars shown", "yellow"));
+            // }));
 
-            // .showbar
-            // show a specific bossbar
-            BuiltInCommands.Add("showbar", new MyCommand("showbar", ".showbar [bar]  Show a specific bossbar", (player, input) =>
-            {
-                var bossbarManager = host?.bossbarManager;
+            // // .showbar
+            // // show a specific bossbar
+            // BuiltInCommands.Add("showbar", new MyCommand("showbar", ".showbar [bar]  Show a specific bossbar", (player, input) =>
+            // {
+            //     var bossbarManager = host?.bossbarManager;
 
-                if (bossbarManager == null)
-                {
-                    host?.TellRaw(player, new RawJson("[!] bossbarManager not found", "red"));
-                    return;
-                }
+            //     if (bossbarManager == null)
+            //     {
+            //         host?.TellRaw(player, new RawJson("[!] bossbarManager not found", "red"));
+            //         return;
+            //     }
 
-                if (input.Length == 0)
-                {
-                    host?.TellRaw(player, new RawJson("[!] Please specify the bossbar", "red"));
-                    return;
-                }
+            //     if (input.Length == 0)
+            //     {
+            //         host?.TellRaw(player, new RawJson("[!] Please specify the bossbar", "red"));
+            //         return;
+            //     }
 
-                string bar = input.Trim(' ').Trim('\"');
+            //     string bar = input.Trim(' ').Trim('\"');
 
-                if (!bossbarManager.Bossbars.ContainsKey(new Guid(bar)))
-                {
-                    host?.TellRaw(player, new RawJson("[!] Bossbar not found", "red"));
-                    return;
-                }
+            //     if (!bossbarManager.Bossbars.ContainsKey(new Guid(bar)))
+            //     {
+            //         host?.TellRaw(player, new RawJson("[!] Bossbar not found", "red"));
+            //         return;
+            //     }
 
-                bossbarManager.Show(bar);
+            //     bossbarManager.Show(bar);
 
-                host?.TellRaw(player, new RawJson($"[+] Bossbar §a{bar}§r shown", "yellow"));
-            }));
+            //     host?.TellRaw(player, new RawJson($"[+] Bossbar §a{bar}§r shown", "yellow"));
+            // }));
 
-            // .hidebar
-            // hide a specific bossbar
-            BuiltInCommands.Add("hidebar", new MyCommand("hidebar", ".hidebar [bar]  Hide a specific bossbar", (player, input) =>
-            {
-                var bossbarManager = host?.bossbarManager;
+            // // .hidebar
+            // // hide a specific bossbar
+            // BuiltInCommands.Add("hidebar", new MyCommand("hidebar", ".hidebar [bar]  Hide a specific bossbar", (player, input) =>
+            // {
+            //     var bossbarManager = host?.bossbarManager;
 
-                if (bossbarManager == null)
-                {
-                    host?.TellRaw(player, new RawJson("[!] bossbarManager not found", "red"));
-                    return;
-                }
+            //     if (bossbarManager == null)
+            //     {
+            //         host?.TellRaw(player, new RawJson("[!] bossbarManager not found", "red"));
+            //         return;
+            //     }
 
-                if (input.Length == 0)
-                {
-                    host?.TellRaw(player, new RawJson("[!] Please specify the bossbar", "red"));
-                    return;
-                }
+            //     if (input.Length == 0)
+            //     {
+            //         host?.TellRaw(player, new RawJson("[!] Please specify the bossbar", "red"));
+            //         return;
+            //     }
 
-                string bar = input.Trim(' ').Trim('\"');
+            //     string bar = input.Trim(' ').Trim('\"');
 
-                if (!bossbarManager.Bossbars.ContainsKey(new Guid(bar)))
-                {
-                    host?.TellRaw(player, new RawJson("[!] Bossbar not found", "red"));
-                    return;
-                }
+            //     if (!bossbarManager.Bossbars.ContainsKey(new Guid(bar)))
+            //     {
+            //         host?.TellRaw(player, new RawJson("[!] Bossbar not found", "red"));
+            //         return;
+            //     }
 
-                bossbarManager.Hide(bar);
+            //     bossbarManager.Hide(bar);
 
-                host?.TellRaw(player, new RawJson($"[+] Bossbar §a{bar}§r hidden", "yellow"));
-            }));
+            //     host?.TellRaw(player, new RawJson($"[+] Bossbar §a{bar}§r hidden", "yellow"));
+            // }));
+
         }
     }
 
@@ -333,7 +393,7 @@ public class CustomCommandManager
     }
 }
 
-public class MyCommand
+public class ServerCommand
 {
     public string Command { get; set; }
 
@@ -344,7 +404,7 @@ public class MyCommand
     // Action<player, command>
     public Action<string, string> Action { get; set; }
 
-    public MyCommand(string command, string description, Action<string, string> action)
+    public ServerCommand(string command, string description, Action<string, string> action)
     {
         string[] commands = command.Split(' ');
         Command = commands[0];

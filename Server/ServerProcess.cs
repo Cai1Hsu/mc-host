@@ -1,4 +1,3 @@
-using System.Text;
 using System.Diagnostics;
 
 namespace mchost.Server
@@ -11,25 +10,14 @@ namespace mchost.Server
 
         public ProcessStartInfo psi { get; set; } = null!;
 
-        public List<string> ProcessLog { get; set; } = new();
-
         public bool IsDone { get; set; } = false;
 
         public bool IsRunning { get; set; } = false;
-
-        public bool IsIntilized
-        {
-            get
-            {
-                return IsDone;
-            }
-        }
 
         public DateTime StartTime { get; set; } = DateTime.Now;
 
         public ServerProcessManager()
         {
-
         }
 
         public void StartServerProcess()
@@ -46,8 +34,6 @@ namespace mchost.Server
 
             if (java.HasExited)
                 throw new Exception("Java exited before we could handle it. Please check the output for more information.");
-
-            ProcessLog = new List<string>();
 
             IsDone = false;
             IsRunning = true;

@@ -80,6 +80,14 @@ public class RawJson
         writer.WriteNumber(key, val);
         return this;
     }
+    
+    public RawJson WritePropertyName(string name)
+    {
+        if (IsFlushed) throw new InvalidOperationException("RawJson is already flushed");
+
+        writer.WritePropertyName(name);
+        return this;
+    }
 
     public RawJson WriteStartObject()
     {
