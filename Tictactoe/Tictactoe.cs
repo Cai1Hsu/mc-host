@@ -270,31 +270,25 @@ public class TictactoeManager
 
             if (board[line, i] != TictactoeMark.Empty)
             {
-                res.WriteStartArray()
-                    .WriteStartObject()
+                res.WriteStartObject()
                         .WriteText($" {board[line, i]} ")
-                    .WriteEndObject()
-                .WriteEndArray();
+                    .WriteEndObject();
             }
             else
             {
                 res.WriteStartArray()
                         .WriteStartObject()
-                            .WriteText("___")
+                            .WriteText("   ")
                         .WriteEndObject()
-                        .WriteStartArray()
+                        .WriteStartObject()
+                        .WritePropertyName("clickEvent")
                             .WriteStartObject()
-                            .WritePropertyName("clickEvent")
-                            .WriteStartArray()
-                                .WriteStartObject()
-                                    .WriteProperty("action", "run_command")
-                                .WriteEndObject()
-                                .WriteStartObject()
-                                    .WriteProperty("value", $"/say {line}{"abc"[i]}")
-                                .WriteEndObject()
-                            .WriteEndArray()
+                                .WriteProperty("action", "run_command")
                             .WriteEndObject()
-                        .WriteEndArray()
+                            .WriteStartObject()
+                                .WriteProperty("value", $"/say {line}{"abc"[i]}")
+                            .WriteEndObject()
+                        .WriteEndObject()
                     .WriteEndArray();
                 
             }
@@ -310,6 +304,7 @@ public class TictactoeManager
 
         return res;
     }
+
 }
 
 public class TictactoeRound
