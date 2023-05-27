@@ -90,9 +90,9 @@ public class LogHandler
                 }
             }
 
-            if (host?.tictactoeManager.isJoining(player) == JoinResult.Join)
+            if (host?.tictactoeManager.isJoining(sender) == JoinResult.Join)
             {
-                host?.tictactoeManager.Join(player, message);
+                host?.tictactoeManager.Join(sender, message);
             }
         }
         // Player joined the game

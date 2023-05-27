@@ -268,21 +268,27 @@ public class CustomCommandManager
 
                 // Use bossbar to display timer
                 var bossbarManager = host?.bossbarManager;
+                if (bossbarManager == null)
+                {
+                    host?.TellRaw(player, new RawJson("[!] BossbarManager not found", "red"));
+                    return;
+                }
+
                 var id = bossbarManager.AddBossbar("Timer");
                 var bar = bossbarManager.Bossbars[id];
                 bar.Visible = true;
-                bossbarManager.Update(id, BossbarProperty.Max, time);
-                bossbarManager.Update(id, BossbarProperty.Value, time);
-                bossbarManager.Update(id, BossbarProperty.Visible, true);
+                bossbarManager.Update(id, BossbarProperty.Max, $"{time}");
+                bossbarManager.Update(id, BossbarProperty.Value, $"{time}");
+                bossbarManager.Update(id, BossbarProperty.Visible, $"{true}");
 
-                bossbarManager.Show(id, "@a");
+                bossbarManager.Show(id);
 
                 // Start timer
                 var timer = new System.Timers.Timer(1000);
                 timer.Elapsed += (sender, e) =>
                 {
                     time--;
-                    bossbarManager.Update(id, BossbarProperty.Value, time);
+                    bossbarManager.Update(id, BossbarProperty.Value, $"{time}");
 
                     if (time <= 0)
                     {
