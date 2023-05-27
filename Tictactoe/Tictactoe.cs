@@ -75,8 +75,8 @@ public class TictactoeManager
         CurrentRound = new TictactoeRound();
         CurrentRound.Owner = player;
 
-        host?.TellRaw(player, "[Tictactoe] You have started a game of Tictactoe!");
-        host?.TellRaw(player, "[Tictactoe] Waiting for players to join...");
+        host?.TellRaw("@a", $"[Tictactoe] {player} have started a game of Tictactoe!");
+        host?.TellRaw("@a", "[Tictactoe] Waiting for players to join...");
 
         this.PrintBoard();
         
@@ -266,12 +266,10 @@ public class TictactoeManager
 
         for (int i = 0; i < 3; i++)
         {
-            res.WriteStartObject();
-
-            if (board[line, i] != TictactoeMark.Empty)
+            if (board[line - 1, i] != TictactoeMark.Empty)
             {
                 res.WriteStartObject()
-                        .WriteText($" {board[line, i]} ")
+                        .WriteText($" {board[line - 1, i]} ")
                     .WriteEndObject();
             }
             else
@@ -289,13 +287,10 @@ public class TictactoeManager
             res.WriteStartObject()
                     .WriteText("|")
                 .WriteEndObject();
-
-            res.WriteEndObject();
         }
 
-        return res;
+        return res.WriteEndArray();
     }
-
 }
 
 public class TictactoeRound

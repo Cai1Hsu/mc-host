@@ -274,7 +274,7 @@ public class CustomCommandManager
                     return;
                 }
 
-                var id = bossbarManager.AddBossbar("Timer");
+                var id = bossbarManager.AddBossbar(new RawJson("Timer").ToString());
                 var bar = bossbarManager.Bossbars[id];
                 bar.Visible = true;
                 bossbarManager.Update(id, BossbarProperty.Max, $"{time}");
