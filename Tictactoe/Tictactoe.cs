@@ -246,12 +246,9 @@ public class TictactoeManager
         // [Tictactoe] | 3 |___|___|___|
 
         host?.TellRaw("@a", @"[Tictactoe] §a§lCurrent Board:");
-        host?.TellRaw("@a", @"[Tictactoe] |-\-|-A-|-B-|-C-|");
-        host?.TellRaw("@a", @"[Tictactoe] +---+---+---+---+");
+        host?.TellRaw("@a", @"[Tictactoe] |---|-A-|-B-|-C-|");
         host?.TellRaw("@a", GetBoardLine(board, 1));
-        host?.TellRaw("@a", @"[Tictactoe] +---+---+---+---+");
         host?.TellRaw("@a", GetBoardLine(board, 2));
-        host?.TellRaw("@a", @"[Tictactoe] +---+---+---+---+");
         host?.TellRaw("@a", GetBoardLine(board, 3));
     }
 
