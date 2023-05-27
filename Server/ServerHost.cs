@@ -371,7 +371,7 @@ namespace mchost.Server
             serverProcess.java.OutputDataReceived += HandleLog;
             serverProcess.java.BeginOutputReadLine();
 
-            HostTimer = new Timer(TimeSpan.FromSeconds(1));
+            HostTimer = new Timer(TimeSpan.FromSeconds(60));
             HostTimer.Elapsed += (sender, e) =>
             {
                 if (HasIntilizedInstence && IsDone)

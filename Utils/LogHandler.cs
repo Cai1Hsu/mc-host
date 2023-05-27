@@ -1,4 +1,5 @@
 using mchost.Server;
+using mchost.Tictactoe;
 
 namespace mchost.Utils;
 
@@ -87,6 +88,11 @@ public class LogHandler
                 {
                     Logging.Logger.Log("Error occurred executing custom command : " + e.Message);
                 }
+            }
+
+            if (host?.tictactoeManager.isJoining(player) == JoinResult.Join)
+            {
+                host?.tictactoeManager.Join(player, message);
             }
         }
         // Player joined the game

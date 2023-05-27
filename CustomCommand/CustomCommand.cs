@@ -2,6 +2,7 @@ using System.Text.Json;
 using mchost.Server;
 using mchost.Utils;
 using mchost.Logging;
+using mchost.Bossbar;
 
 namespace mchost.CustomCommand;
 
@@ -243,6 +244,55 @@ public class CustomCommandManager
             {
                 var tictactoeManager = host?.tictactoeManager;
                 tictactoeManager?.StartGame(player);
+            }));
+
+            // .timer
+            BuiltInCommands.Add("timer", new ServerCommand("timer", ".timer [sec] Set a timer", (player, input) =>
+            {
+                var args = input.Split(' ');
+
+                if (args.Length < 1)
+                {
+                    host?.TellRaw(player, new RawJson("[!] Please specify the time", "red"));
+                    return;
+                }
+
+                if (!int.TryParse(args[0], out int time))
+                {
+                    host?.TellRaw(player, new RawJson("[!] Please input valid time", "red"));
+                    return;
+                }
+
+
+                host?.TellRaw("@a", new RawJson($"[+] Timer set by §a{player}§r", "yellow"));
+
+                // Use bossbar to display timer
+                var bossbarManager = host?.bossbarManager;
+                var id = bossbarManager.AddBossbar("Timer");
+                var bar = bossbarManager.Bossbars[id];
+                bar.Visible = true;
+                bossbarManager.Update(id, BossbarProperty.Max, time);
+                bossbarManager.Update(id, BossbarProperty.Value, time);
+                bossbarManager.Update(id, BossbarProperty.Visible, true);
+
+                bossbarManager.Show(id, "@a");
+
+                // Start timer
+                var timer = new System.Timers.Timer(1000);
+                timer.Elapsed += (sender, e) =>
+                {
+                    time--;
+                    bossbarManager.Update(id, BossbarProperty.Value, time);
+
+                    if (time <= 0)
+                    {
+                        bossbarManager.RemoveBossbar(id);
+                        timer.Stop();
+                        timer.Dispose();
+
+                        host?.TellRaw("@a", "/title @a title §aTime's up!§r");
+                    }
+                };
             }));
 
             // .getbars

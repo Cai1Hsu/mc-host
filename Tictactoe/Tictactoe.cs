@@ -29,7 +29,7 @@ public class TictactoeManager
     {
         get
         {
-            return IsPlaying && CurrentRound?.Player1 != null && CurrentRound?.Player2 != null;
+            return IsPlaying && CurrentRound?.Owner != null && CurrentRound?.Participate != null;
         }
     }
 
@@ -46,10 +46,10 @@ public class TictactoeManager
 
         roundTimeoutTask = Task.Delay(ROUNDTIMEOUT).ContinueWith((task) => {
            if (CurrentRound == null) return;
-           if (CurrentRound.Player1 == null) return;
-           if (CurrentRound.Player2 == null) return;
+           if (CurrentRound.Owner == null) return;
+           if (CurrentRound.Participate == null) return;
 
-            var current_player = CurrentRound.Turn == TictactoeTurn.Player1 ? CurrentRound.Player1 : CurrentRound.Player2;
+            var current_player = CurrentRound.Turn == TictactoeTurn.Owner ? CurrentRound.Owner : CurrentRound.Participate;
 
             host?.TellRaw("@a", $"[Tictactoe] The game has timed out! So the winner is {current_player}");
             CurrentRound = null; // End game
@@ -73,7 +73,7 @@ public class TictactoeManager
         }
 
         CurrentRound = new TictactoeRound();
-        CurrentRound.Player1 = player;
+        CurrentRound.Owner = player;
 
         host?.TellRaw(player, "[Tictactoe] You have started a game of Tictactoe!");
         host?.TellRaw(player, "[Tictactoe] Waiting for players to join...");
@@ -84,6 +84,23 @@ public class TictactoeManager
         
         // Set timeout
         ResetTimeOut();
+    }
+
+    public JoinResult isJoining(string player, string msg)
+    {
+        if (msg.Length != 2) return JoinResult.NotJoining;
+
+        if (!this.IsPlaying) return JoinResult.NotPlaying;
+
+        if (this.IsFull && !IsPlayerPlaying(player)) return JoinResult.Full;
+
+        msg = msg.ToLower();
+
+        var check_result = CheckType(msg[0]) * CheckType(msg[1]);
+
+        if (check_result != -1) return JoinResult.InCorrectFormat;
+
+        return JoinResult.Join;
     }
 
     public void Join(string player, string msg)
@@ -119,19 +136,19 @@ public class TictactoeManager
         // Reset timeout timer
 
 
-        CurrentRound.Board[row, col] = CurrentRound.Player1 == player ? TictactoeMark.X : TictactoeMark.O;
+        CurrentRound.Board[row, col] = CurrentRound.Owner == player ? TictactoeMark.X : TictactoeMark.O;
 
         this.PrintBoard();
 
-        var turn = CurrentRound.Player1 == player ? TictactoeTurn.Player1 : TictactoeTurn.Player2;
+        var turn = CurrentRound.Owner == player ? TictactoeTurn.Owner : TictactoeTurn.Participate;
 
         var turn_res = CheckWin(turn);
 
         if (!turn_res.IsEnded)
         {
-            var next_turn = turn == TictactoeTurn.Player1 ? TictactoeTurn.Player2 : TictactoeTurn.Player1;
+            var next_turn = turn == TictactoeTurn.Owner ? TictactoeTurn.Participate : TictactoeTurn.Owner;
             CurrentRound.Turn = next_turn;
-            var next_player = next_turn == TictactoeTurn.Player1 ? CurrentRound.Player1 : CurrentRound.Player2;
+            var next_player = next_turn == TictactoeTurn.Owner ? CurrentRound.Owner : CurrentRound.Participate;
             
             host?.TellRaw(next_player, "[Tictactoe] Now it's your turn! Click or say [a,b,c][1,2,3] to place your mark!");
             return;
@@ -159,8 +176,8 @@ public class TictactoeManager
         if (CurrentRound == null) return new TurnResult(false, null);
 
         var board = CurrentRound?.Board;
-        var player1 = CurrentRound?.Player1;
-        var player2 = CurrentRound?.Player2;
+        var player1 = CurrentRound?.Owner;
+        var player2 = CurrentRound?.Participate;
         
         if (board == null) return new TurnResult(false, null);
         
@@ -169,7 +186,7 @@ public class TictactoeManager
         {
             if (board[i, 0] == board[i, 1] && board[i, 1] == board[i, 2] && board[i, 0] != 0)
             {
-                return new TurnResult(true, turn == TictactoeTurn.Player1 ? player1 : player2);
+                return new TurnResult(true, turn == TictactoeTurn.Owner ? player1 : player2);
             }
         }
 
@@ -178,14 +195,14 @@ public class TictactoeManager
         {
             if (board[0, i] == board[1, i] && board[1, i] == board[2, i] && board[0, i] != 0)
             {
-                return new TurnResult(true, turn == TictactoeTurn.Player1 ? player1 : player2);
+                return new TurnResult(true, turn == TictactoeTurn.Owner ? player1 : player2);
             }
         }
 
         // Check diagonals
         if (board[0, 0] == board[1, 1] && board[1, 1] == board[2, 2] && board[0, 0] != 0)
         {
-            return new TurnResult(true, turn == TictactoeTurn.Player1 ? player1 : player2);
+            return new TurnResult(true, turn == TictactoeTurn.Owner ? player1 : player2);
         }
 
         // Check Draw
@@ -202,26 +219,9 @@ public class TictactoeManager
         return new TurnResult(true, null);
     }
 
-    public JoinResult isJoining(string player, string msg)
-    {
-        if (msg.Length != 2) return JoinResult.NotJoining;
-
-        if (!this.IsPlaying) return JoinResult.NotPlaying;
-
-        if (this.IsFull) return JoinResult.Full;
-
-        msg = msg.ToLower();
-
-        var check_result = CheckType(msg[0]) * CheckType(msg[1]);
-
-        if (check_result != -1) return JoinResult.InCorrectFormat;
-
-        return JoinResult.Join;
-    }
-
     public bool IsPlayerPlaying(string player)
     {
-        return CurrentRound?.Player1 == player || CurrentRound?.Player2 == player;
+        return CurrentRound?.Owner == player || CurrentRound?.Participate == player;
     }
 
     private int CheckType(char c)
@@ -266,7 +266,7 @@ public class TictactoeManager
 
         for (int i = 0; i < 3; i++)
         {
-            res.WriteStartArray();
+            res.WriteStartObject();
 
             if (board[line, i] != TictactoeMark.Empty)
             {
@@ -276,30 +276,21 @@ public class TictactoeManager
             }
             else
             {
-                res.WriteStartArray()
+                res.WriteStartObject()
+                        .WriteText("   ")
+                    .WritePropertyName("clickEvent")
                         .WriteStartObject()
-                            .WriteText("   ")
+                            .WriteProperty("action", "run_command")
+                            .WriteProperty("value", $"/say {line}{"abc"[i]}")
                         .WriteEndObject()
-                        .WriteStartObject()
-                        .WritePropertyName("clickEvent")
-                            .WriteStartObject()
-                                .WriteProperty("action", "run_command")
-                            .WriteEndObject()
-                            .WriteStartObject()
-                                .WriteProperty("value", $"/say {line}{"abc"[i]}")
-                            .WriteEndObject()
-                        .WriteEndObject()
-                    .WriteEndArray();
-                
+                    .WriteEndObject();
             }
             
-            res.WriteStartArray()
-                    .WriteStartObject()
-                        .WriteText("|")
-                    .WriteEndObject()
-                .WriteEndArray();
+            res.WriteStartObject()
+                    .WriteText("|")
+                .WriteEndObject();
 
-            res.WriteEndArray();
+            res.WriteEndObject();
         }
 
         return res;
@@ -309,16 +300,16 @@ public class TictactoeManager
 
 public class TictactoeRound
 {
-    public string Player1 { get; set;} = null!;
-    public string Player2 { get; set;} = null!;
+    public string Owner { get; set;} = null!;
+    public string Participate { get; set;} = null!;
 
     public TictactoeMark[,] Board { get; set; } = new TictactoeMark[3, 3];
 
-    public TictactoeTurn Turn { get; set; } = TictactoeTurn.Player1;
+    public TictactoeTurn Turn { get; set; } = TictactoeTurn.Owner;
 
     public bool IsPlayerTurn(string player)
     {
-        return (Turn == TictactoeTurn.Player1 && Player1 == player) || (Turn == TictactoeTurn.Player2 && Player2 == player);
+        return (Turn == TictactoeTurn.Owner && Owner == player) || (Turn == TictactoeTurn.Participate && Participate == player);
     }
 }
 
@@ -340,8 +331,8 @@ public struct TurnResult
 
 public enum TictactoeTurn
 {
-    Player1,
-    Player2
+    Owner,
+    Participate
 }
 
 public enum TictactoeMark
