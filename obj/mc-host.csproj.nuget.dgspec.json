@@ -1,26 +1,28 @@
 {
   "format": 1,
   "restore": {
-    "/workspaces/mc-host/mc-host.csproj": {}
+    "/home/caiyi/workspace/mc-host/mc-host.csproj": {}
   },
   "projects": {
-    "/workspaces/mc-host/mc-host.csproj": {
+    "/home/caiyi/workspace/mc-host/mc-host.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/workspaces/mc-host/mc-host.csproj",
+        "projectUniqueName": "/home/caiyi/workspace/mc-host/mc-host.csproj",
         "projectName": "mc-host",
-        "projectPath": "/workspaces/mc-host/mc-host.csproj",
-        "packagesPath": "/home/codespace/.nuget/packages/",
-        "outputPath": "/workspaces/mc-host/obj/",
+        "projectPath": "/home/caiyi/workspace/mc-host/mc-host.csproj",
+        "packagesPath": "/home/caiyi/.nuget/packages/",
+        "outputPath": "/home/caiyi/workspace/mc-host/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/codespace/.nuget/NuGet/NuGet.Config"
+          "/home/caiyi/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net7.0"
         ],
         "sources": {
-          "https://api.nuget.org/v3/index.json": {}
+          "/usr/share/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {},
+          "https://nuget.cdn.azure.cn/v3/index.json": {}
         },
         "frameworks": {
           "net7.0": {
@@ -58,6 +60,16 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.linux-x64",
+              "version": "[7.0.5, 7.0.5]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.linux-x64",
+              "version": "[7.0.5, 7.0.5]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
@@ -66,7 +78,12 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/dotnet/7.0.203/sdk/7.0.203/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/7.0.203/RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "linux-x64": {
+          "#import": []
         }
       }
     }
