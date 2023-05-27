@@ -90,7 +90,7 @@ public class LogHandler
                 }
             }
 
-            if (host?.tictactoeManager.isJoining(sender) == JoinResult.Join)
+            if (host?.tictactoeManager.isJoining(sender, message) == JoinResult.Join)
             {
                 host?.tictactoeManager.Join(sender, message);
             }
