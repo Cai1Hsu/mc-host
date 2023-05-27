@@ -44,7 +44,7 @@ public class TictactoeManager
 
         roundTimeoutTask.Dispose();
 
-        Task.Delay(ROUNDTIMEOUT).ContinueWith((task) => {
+        roundTimeoutTask = Task.Delay(ROUNDTIMEOUT).ContinueWith((task) => {
            if (CurrentRound == null) return;
            if (CurrentRound.Player1 == null) return;
            if (CurrentRound.Player2 == null) return;
