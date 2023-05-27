@@ -1,4 +1,3 @@
-using mchost.CustomCommand;
 using mchost.Server;
 
 namespace mchost.Utils;
@@ -7,15 +6,9 @@ public class LogHandler
 {
     private ServerHost? host;
 
-    private ServerProcessManager? serverProcess;
-
-    private CustomCommandManager? customCommandManager;
-
     public LogHandler()
     {
         host = ServerHost.MainHost;
-        serverProcess = host?.serverProcess;
-        customCommandManager = host?.customCommandManager;
     }
 
     public void AnalyzeLog(string log)
@@ -73,23 +66,26 @@ public class LogHandler
 
     private void HandleINFO(string logContent)
     {
+        logContent = logContent.TrimStart(' ');
+
         // message
-        if (logContent.StartsWith("<"))
+        if (logContent.StartsWith('<'))
         {
             // Someone sent a message
-            string sender = logContent[1..logContent.IndexOf(">")];
-            string message = logContent[(logContent.IndexOf(">") + 2)..];
+            string sender = logContent[1..logContent.IndexOf('>')];
+            string message = logContent[(logContent.IndexOf('>') + 2)..];
             host?.MessageList.Add(new PlayerMessage { Content = message, Sender = sender, Time = DateTime.Now });
 
             if (message.StartsWith('.'))
             {
+                Logging.Logger.Log("Custom command received");
                 try
                 {
-                    customCommandManager?.Execute(message, sender);
+                    host?.SendCustomCommand(message, sender);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-
+                    Logging.Logger.Log("Error occurred executing custom command : " + e.Message);
                 }
             }
         }

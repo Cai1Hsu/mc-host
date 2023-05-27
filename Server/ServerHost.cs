@@ -19,6 +19,7 @@ namespace mchost.Server
         public Dictionary<string, DateTime> OnlinePlayers = new Dictionary<string, DateTime>();
 
         public Dictionary<string, TimeSpan> StoredPlayersPlayTime = new Dictionary<string, TimeSpan>();
+
         public Dictionary<string, TimeSpan> PlayersPlayTime
         {
             get
@@ -104,7 +105,10 @@ namespace mchost.Server
             if (!StoredPlayersPlayTime.ContainsKey(player))
                 StoredPlayersPlayTime.Add(player, TimeSpan.Zero);
 
+<<<<<<< HEAD
             // TODO
+=======
+>>>>>>> c8a6f4b7351b32dcd48454eddb5e41dfcc240fa7
             StoredPlayersPlayTime[player] += DateTime.Now - OnlinePlayers[player];
 
             try
@@ -121,6 +125,26 @@ namespace mchost.Server
         /// Get a player's play time. This method costs O(n) time. It's better to use <see cref="PlayersPlayTime"/> and cope with it yourself.
         /// </summary>
         public TimeSpan GetPlayerPlayTime(string player) => this.PlayersPlayTime[player];
+
+        public bool SendCustomCommand(string command, string player)
+        {
+            try
+            {
+                if (customCommandManager == null)
+                {
+                    Logging.Logger.Log("Custom command manager is null");
+                    return false;
+                }
+
+                customCommandManager.Execute(command, player);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Logging.Logger.Log($"Error occurred when executing custom command \'{command}\', message : {e.Message}");
+            }
+            return false;
+        }
 
         public bool SendCommand(string command) => serverProcess.SendCommand(command);
 
@@ -146,9 +170,10 @@ namespace mchost.Server
             {
                 logHandler.AnalyzeLog(data);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 Logging.Logger.Log($"Error occurred when trying to analyze log. The log \'{data}\'");
+                Logging.Logger.Log(e.Message);
             }
         }
 
@@ -359,7 +384,17 @@ namespace mchost.Server
 
                     if (DateTime.Now.Minute % 20 == 0) SendCommand("save-all");
 
+<<<<<<< HEAD
                     if (DateTime.Now.Minute % 1 == 0 && onlineBoardManager != null) onlineBoardManager.Update();
+=======
+                    if (IsDone && LoopCount % 60 == 0) SaveMessageList();
+
+                    if (IsDone && LoopCount % 60 == 0) SaveTimeStatistics();
+
+                    if (IsDone && LoopCount % 1200 == 0) SendCommand("save-all");
+
+                    if (IsDone && LoopCount % 60 == 0) onlineBoardManager?.Update();
+>>>>>>> c8a6f4b7351b32dcd48454eddb5e41dfcc240fa7
                 }
             };
             HostTimer.Start();

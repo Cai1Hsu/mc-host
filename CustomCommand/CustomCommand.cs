@@ -38,7 +38,11 @@ public class CustomCommandManager
         {
             BuiltInCommands[cmd_name]?.Action(player, trimed);
 
+<<<<<<< HEAD
             // host?.TellRaw(player, new RawJson($"[CustomCommand] Executed built-in command: {trimed}", "yellow"));
+=======
+            host?.TellRaw(player, new RawJson($"[CustomCommand] Executed built-in command: {cmd}", "yellow"));
+>>>>>>> c8a6f4b7351b32dcd48454eddb5e41dfcc240fa7
             return;
         }
 

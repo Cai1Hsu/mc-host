@@ -85,7 +85,7 @@ namespace mchost.Bossbar
 
             Show(guid);
 
-            SaveBossbarsAsync();
+            SaveBossbars();
 
             return guid;
         }
@@ -106,11 +106,18 @@ namespace mchost.Bossbar
 
         public Bossbar GetBossbar(Guid guid) => Bossbars[guid];
 
-        public void SaveBossbarsAsync()
+        public void SaveBossbars()
         {
-            using (FileStream fs = File.Create("Bossbars.json"))
+            try
             {
-                JsonSerializer.SerializeAsync(fs, Bossbars);
+                using (FileStream fs = File.Create("Bossbars.json"))
+                {
+                    JsonSerializer.Serialize(fs, Bossbars);
+                }
+            }
+            catch (Exception e)
+            {
+                Logging.Logger.Log($"Failed to Save Bossbars. The message : " + e.Message);
             }
         }
 
