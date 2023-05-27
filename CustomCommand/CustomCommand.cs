@@ -295,7 +295,7 @@ public class CustomCommandManager
                         timer.Stop();
                         timer.Dispose();
 
-                        host?.TellRaw("@a", "/title @a title §aTime's up!§r");
+                        host?.SendCommand($"/title @a title {new RawJson("§aTime's up!§r")}");
                     }
                 };
                 timer.Start();

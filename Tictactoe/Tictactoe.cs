@@ -135,7 +135,7 @@ public class TictactoeManager
         // Reset timeout timer
          ResetTimeOut();
 
-        CurrentRound.Board[row, col] = CurrentRound.Owner == player ? TictactoeMark.X : TictactoeMark.O;
+        CurrentRound.Board[row, col] = CurrentRound.Turn == TictactoeTurn.Owner ? TictactoeMark.X : TictactoeMark.O;
 
         this.PrintBoard();
 
@@ -246,7 +246,7 @@ public class TictactoeManager
         // [Tictactoe] | 3 |___|___|___|
 
         host?.TellRaw("@a", @"[Tictactoe] §a§lCurrent Board:");
-        host?.TellRaw("@a", @"[Tictactoe] | \ | A | B | C |");
+        host?.TellRaw("@a", @"[Tictactoe] |-\-|-A-|-B-|-C-|");
         host?.TellRaw("@a", @"[Tictactoe] +---+---+---+---+");
         host?.TellRaw("@a", GetBoardLine(board, 1));
         host?.TellRaw("@a", @"[Tictactoe] +---+---+---+---+");
@@ -260,7 +260,7 @@ public class TictactoeManager
         RawJson res = new RawJson()
                             .WriteStartArray()
                             .WriteStartObject()
-                            .WriteText($"[Tictactoe] | {line} |")
+                            .WriteText($"[Tictactoe] |-{line}-|")
                             .WriteEndObject();
 
         for (int i = 0; i < 3; i++)
