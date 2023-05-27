@@ -73,7 +73,7 @@ namespace mchost.Bossbar
         {
             Bossbar bossbar = Bossbars[guid];
 
-            host?.SendCommand($"/bossbar set minecraft:{bossbar.guid} {propertyName.ToString().ToLower()} \"{value}\"");
+            host?.SendCommand($"/bossbar set minecraft:{bossbar.guid} {propertyName.ToString().ToLower()} {value}");
         }
 
         public Guid AddBossbar(string name)

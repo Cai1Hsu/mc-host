@@ -1,7 +1,5 @@
-using System.Text.Json;
 using mchost.Server;
 using mchost.Utils;
-using mchost.Logging;
 using System.ComponentModel;
 
 namespace mchost.Tictactoe;
@@ -69,6 +67,7 @@ public class TictactoeManager
         if (IsPlaying)
         {
             host?.TellRaw(player, "[Tictactoe] There is already a game in progress!");
+            PrintBoard();
             return;
         }
 
@@ -134,7 +133,7 @@ public class TictactoeManager
         }
 
         // Reset timeout timer
-
+         ResetTimeOut();
 
         CurrentRound.Board[row, col] = CurrentRound.Owner == player ? TictactoeMark.X : TictactoeMark.O;
 
@@ -149,7 +148,7 @@ public class TictactoeManager
             var next_turn = turn == TictactoeTurn.Owner ? TictactoeTurn.Participate : TictactoeTurn.Owner;
             CurrentRound.Turn = next_turn;
             var next_player = next_turn == TictactoeTurn.Owner ? CurrentRound.Owner : CurrentRound.Participate;
-            
+            if (next_player == null) return;
             host?.TellRaw(next_player, "[Tictactoe] Now it's your turn! Click or say [a,b,c][1,2,3] to place your mark!");
             return;
         }
@@ -269,13 +268,13 @@ public class TictactoeManager
             if (board[line - 1, i] != TictactoeMark.Empty)
             {
                 res.WriteStartObject()
-                        .WriteText($" {board[line - 1, i]} ")
+                        .WriteText($"_{board[line - 1, i]}_")
                     .WriteEndObject();
             }
             else
             {
                 res.WriteStartObject()
-                        .WriteText("   ")
+                        .WriteText("___")
                     .WritePropertyName("clickEvent")
                         .WriteStartObject()
                             .WriteProperty("action", "run_command")
@@ -304,6 +303,7 @@ public class TictactoeRound
 
     public bool IsPlayerTurn(string player)
     {
+        if (Owner == null || Participate == null) return true;
         return (Turn == TictactoeTurn.Owner && Owner == player) || (Turn == TictactoeTurn.Participate && Participate == player);
     }
 }

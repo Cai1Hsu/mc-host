@@ -276,10 +276,9 @@ public class CustomCommandManager
 
                 var id = bossbarManager.AddBossbar(new RawJson("Timer").ToString());
                 var bar = bossbarManager.Bossbars[id];
-                bar.Visible = true;
                 bossbarManager.Update(id, BossbarProperty.Max, $"{time}");
                 bossbarManager.Update(id, BossbarProperty.Value, $"{time}");
-                bossbarManager.Update(id, BossbarProperty.Visible, $"{true}");
+                bossbarManager.Update(id, BossbarProperty.Visible, $"true");
 
                 bossbarManager.Show(id);
 
@@ -299,6 +298,7 @@ public class CustomCommandManager
                         host?.TellRaw("@a", "/title @a title §aTime's up!§r");
                     }
                 };
+                timer.Start();
             }));
 
             // .getbars
