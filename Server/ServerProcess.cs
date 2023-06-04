@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace mchost.Server
+namespace Parallel.Server
 {
     public class ServerProcessManager
     {

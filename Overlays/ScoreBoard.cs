@@ -1,7 +1,7 @@
-using mchost.Server;
-using mchost.Utils;
+using Parallel.Server;
+using Parallel.Utils;
 
-namespace mchost.Overlays
+namespace Parallel.Overlays
 {
     public class OnlineBoardManager
     {

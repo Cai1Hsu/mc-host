@@ -2,7 +2,7 @@ using System.Buffers;
 using System.Text;
 using System.Text.Json;
 
-namespace mchost.Utils;
+namespace Parallel.Utils;
 
 public class RawJson
 {

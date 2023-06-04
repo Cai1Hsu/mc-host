@@ -4,7 +4,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>mchost</RootNamespace>
+    <RootNamespace>Parallel</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

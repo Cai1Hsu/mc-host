@@ -1,8 +1,8 @@
 using System.Text.Json;
-using mchost.Server;
-using mchost.Utils;
+using Parallel.Server;
+using Parallel.Utils;
 
-namespace mchost.Bossbar
+namespace Parallel.Bossbar
 {
     public class BossbarManager
     {

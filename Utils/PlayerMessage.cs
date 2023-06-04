@@ -1,4 +1,4 @@
-namespace mchost.Utils;
+namespace Parallel.Utils;
 
 public struct PlayerMessage
 {

@@ -1,7 +1,7 @@
-using mchost.Server;
+using Parallel.Server;
 using Microsoft.AspNetCore.Mvc;
 
-namespace mchost.Controllers;
+namespace Parallel.Controllers;
 
 [ApiController]
 [Route("api/bossbar/[controller]")]

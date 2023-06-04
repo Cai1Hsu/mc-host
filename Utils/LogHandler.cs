@@ -1,7 +1,7 @@
-using mchost.Server;
-using mchost.Tictactoe;
+using Parallel.Server;
+using Parallel.Tictactoe;
 
-namespace mchost.Utils;
+namespace Parallel.Utils;
 
 public class LogHandler
 {
@@ -90,10 +90,11 @@ public class LogHandler
                 }
             }
 
-            if (host?.tictactoeManager.isJoining(sender, message) == JoinResult.Join)
-            {
-                host?.tictactoeManager.Join(sender, message);
-            }
+            // We use CustomCommand to handle this instead
+            // if (host?.tictactoeManager.isJoining(sender, message) == JoinResult.Join)
+            // {
+            //     host?.tictactoeManager.Join(sender, message);
+            // }
         }
         // Player joined the game
         else if (logContent.Contains("joined the game"))

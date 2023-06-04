@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace mchost.Logging
+namespace Parallel.Logging
 {
     public static class Logger
     {

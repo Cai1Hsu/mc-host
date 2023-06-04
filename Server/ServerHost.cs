@@ -1,14 +1,14 @@
 using System.Diagnostics;
-using mchost.Bossbar;
-using mchost.Utils;
-using mchost.Overlays;
+using Parallel.Bossbar;
+using Parallel.Utils;
+using Parallel.Overlays;
 using System.Text.Json;
 using System.Text;
-using mchost.CustomCommand;
-using mchost.Tictactoe;
+using Parallel.CustomCommand;
+using Parallel.Tictactoe;
 using Timer = System.Timers.Timer;
 
-namespace mchost.Server
+namespace Parallel.Server
 {
     public class ServerHost
     {
@@ -349,8 +349,9 @@ namespace mchost.Server
                 .WriteEndArray();
 
             TellRaw(player, greet);
-            TellRaw(player, new RawJson("This is a technical preview of mchost(github.com/cai1hsu/mc-host), if you find any bugs, please report to the server owner.", "yellow"));
-            TellRaw(player, new RawJson("Our server supports custom command, type §a.help§r for more info.", "yellow"));
+            TellRaw(player, new RawJson("This is a technical preview of §a.Parallel§r(github.com/cai1hsu/mc-host)"));
+            TellRaw(player, new RawJson("Please report any bugs to §a@cai1hsu§r."));
+            TellRaw(player, new RawJson("Our server supports custom command, type §a.help§r for more info."));
         }
 
         public string GetStatus()

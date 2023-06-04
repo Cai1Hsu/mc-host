@@ -1,9 +1,9 @@
-using mchost.Server;
-using mchost.Logging;
+using Parallel.Server;
+using Parallel.Logging;
 
 const bool TECHNICAL_PREVIEW = true;
 
-Logger.Log("Welcome to mchost!");
+Logger.Log("Welcome to Parallel!");
 
 var host = new ServerHost();
 

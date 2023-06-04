@@ -1,1 +1,2 @@
-# mc-host
+# Parallel
+The Parallel Minecraft server host.

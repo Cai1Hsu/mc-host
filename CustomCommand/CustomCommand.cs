@@ -1,10 +1,10 @@
 using System.Text.Json;
-using mchost.Server;
-using mchost.Utils;
-using mchost.Logging;
-using mchost.Bossbar;
+using Parallel.Server;
+using Parallel.Utils;
+using Parallel.Logging;
+using Parallel.Bossbar;
 
-namespace mchost.CustomCommand;
+namespace Parallel.CustomCommand;
 
 public class CustomCommandManager
 {
@@ -300,6 +300,21 @@ public class CustomCommandManager
                 };
                 timer.Start();
             }));
+
+            // Bind Tictactoe Place
+            foreach (var row in "123")
+            {
+                foreach (var col in "abc")
+                {
+                    var cmd = $"{row}{col}";
+
+                    BuiltInCommands.Add(cmd, new ServerCommand(cmd, cmd, (player, _) =>
+                    {
+                        var tictactoeManager = host?.tictactoeManager;
+                        tictactoeManager?.Join(player, cmd);
+                    }));
+                }
+            }
 
             // .getbars
             // BuiltInCommands.Add("getbars", new MyCommand("getbars", ".getbars  Get the list of bossbars", (player, _) =>

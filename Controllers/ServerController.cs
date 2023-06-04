@@ -1,8 +1,8 @@
-using mchost.Server;
-using mchost.Utils;
+using Parallel.Server;
+using Parallel.Utils;
 using Microsoft.AspNetCore.Mvc;
 
-namespace mchost.Controllers;
+namespace Parallel.Controllers;
 
 [ApiController]
 [Route("api/server/[controller]")]

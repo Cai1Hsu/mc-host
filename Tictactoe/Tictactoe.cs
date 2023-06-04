@@ -1,12 +1,12 @@
-using mchost.Server;
-using mchost.Utils;
+using Parallel.Server;
+using Parallel.Utils;
 using System.ComponentModel;
 
-namespace mchost.Tictactoe;
+namespace Parallel.Tictactoe;
 
 public class TictactoeManager
 {
-    private TimeSpan ROUNDTIMEOUT = TimeSpan.FromSeconds(60);
+    private TimeSpan ROUNDTIMEOUT = TimeSpan.FromSeconds(40);
     private Task? roundTimeoutTask;
 
     private ServerHost? host;
@@ -79,7 +79,7 @@ public class TictactoeManager
 
         this.PrintBoard();
         
-        host?.TellRaw(player, "[Tictactoe] Now it's your turn! Click or say [a,b,c][1,2,3] to place your mark!");
+        host?.TellRaw(player, "[Tictactoe] Now it's your turn! Click or say .[1,2,3][a,b,c] to place your mark!");
         
         // Set timeout
         ResetTimeOut();
@@ -115,11 +115,21 @@ public class TictactoeManager
             return;
         }
 
+        // We want to allow solo play
+        if (host?.OnlinePlayers.Count > 1)
+        {
+            if (CurrentRound.Turn == TictactoeTurn.Participant && CurrentRound.Owner == player)
+            {
+                host?.TellRaw(player, "[Tictactoe] You can't join your own game!");
+                return;
+            }
+        }
+
         var type_check = CheckType(msg[0]) * CheckType(msg[1]);
 
         if (type_check != -1)
         {
-            host?.TellRaw(player, "[Tictactoe] Invalid format! Please click the mark or say [a,b,c][1,2,3]!");
+            host?.TellRaw(player, "[Tictactoe] Invalid format! Please click the mark or say .[1,2,3][a,b,c]!");
             return;
         }
 
@@ -139,17 +149,16 @@ public class TictactoeManager
 
         this.PrintBoard();
 
-        var turn = CurrentRound.Owner == player ? TictactoeTurn.Owner : TictactoeTurn.Participate;
+        var turn = CurrentRound.Owner == player ? TictactoeTurn.Owner : TictactoeTurn.Participant;
 
         var turn_res = CheckWin(turn);
 
         if (!turn_res.IsEnded)
         {
-            var next_turn = turn == TictactoeTurn.Owner ? TictactoeTurn.Participate : TictactoeTurn.Owner;
-            CurrentRound.Turn = next_turn;
-            var next_player = next_turn == TictactoeTurn.Owner ? CurrentRound.Owner : CurrentRound.Participate;
+            CurrentRound.Turn = CurrentRound.Turn == TictactoeTurn.Owner ? TictactoeTurn.Participant : TictactoeTurn.Owner;
+            var next_player = CurrentRound.Turn == TictactoeTurn.Owner ? CurrentRound.Owner : CurrentRound.Participate;
             if (next_player == null) return;
-            host?.TellRaw(next_player, "[Tictactoe] Now it's your turn! Click or say [a,b,c][1,2,3] to place your mark!");
+            host?.TellRaw(next_player, "[Tictactoe] Now it's your turn! Click or say .[1,2,3][a,b,c] to place your mark!");
             return;
         }
 
@@ -301,7 +310,7 @@ public class TictactoeRound
     public bool IsPlayerTurn(string player)
     {
         if (Owner == null || Participate == null) return true;
-        return (Turn == TictactoeTurn.Owner && Owner == player) || (Turn == TictactoeTurn.Participate && Participate == player);
+        return (Turn == TictactoeTurn.Owner && Owner == player) || (Turn == TictactoeTurn.Participant && Participate == player);
     }
 }
 
@@ -324,7 +333,7 @@ public struct TurnResult
 public enum TictactoeTurn
 {
     Owner,
-    Participate
+    Participant
 }
 
 public enum TictactoeMark
